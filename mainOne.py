@@ -10,7 +10,6 @@ from tensorflow.contrib.rnn import LSTMCell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as bi_rnn
 from tensorflow.contrib.layers import fully_connected
 import numpy as np
-from attention import attention
 
 
 NUM_EPOCHS = 100
@@ -212,17 +211,17 @@ embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 
-# # DIFF-GRU Layer
-# gru_output = diffGRU(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN')
-# gru_output_rev = diffGRURev(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN_REV')
-# gru_out = tf.concat((gru_output, gru_output_rev), axis=2)
+# DIFF-GRU Layer
+gru_output = diffGRU(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN')
+gru_output_rev = diffGRURev(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN_REV')
+gru_out = tf.concat((gru_output, gru_output_rev), axis=2)
 
-#normal bi_GRU
-(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
-gru_out = tf.concat((f_out, b_out), axis=2)
+# #normal bi_GRU
+# (f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+# gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attention(gru_out, ATTENTION_SIZE, input_s)
+attention_output = AttentionLayer(gru_out, "attention")
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
