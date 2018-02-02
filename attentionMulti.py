@@ -3,7 +3,7 @@
 
 import tensorflow as tf
 
-def attentionMulti(inputs, attention_size, s, time_major=False, return_alphas=False):
+def attentionMulti(inputs, attention_size, s, length, time_major=False, return_alphas=False):
     """
     Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
@@ -99,6 +99,21 @@ def attentionMulti(inputs, attention_size, s, time_major=False, return_alphas=Fa
 
     s = tf.cast(s, tf.float32)
     vu = vu_pos * s[:, :, 2] + vu_med * s[:, :, 1] + vu_neg * s[:, :, 0]
+
+
+
+    def cond(i, j):
+        return i < length
+
+    def body(i, j):
+
+
+        i += 1
+        return i, j
+
+
+
+
 
 
     alphas = tf.nn.softmax(vu)  # (B,T) shape also
