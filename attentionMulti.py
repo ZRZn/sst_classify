@@ -3,7 +3,7 @@
 
 import tensorflow as tf
 
-def attentionMulti(inputs, attention_size, s, length, time_major=False, return_alphas=False):
+def attentionMulti(inputs, attention_size, s, length=0, time_major=False, return_alphas=False):
     """
     Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
@@ -102,15 +102,15 @@ def attentionMulti(inputs, attention_size, s, length, time_major=False, return_a
 
 
 
-    def cond(i, j):
-        return i < length
-
-    def body(i, j):
-
-
-        i += 1
-        return i, j
-
+    # def cond(i, j):
+    #     return i < length
+    #
+    # def body(i, j):
+    #
+    #
+    #     i += 1
+    #     return i, j
+    #
 
 
 
