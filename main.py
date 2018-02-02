@@ -168,11 +168,11 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 # gru_out = tf.concat((gru_output, gru_output_rev), axis=2)
 
 #normal bi_GRU
-f_out, b_out = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = AttentionLayer(gru_out)
+attention_output = AttentionLayer(gru_out, "attention")
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 

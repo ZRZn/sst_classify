@@ -78,6 +78,7 @@ def build_dataset(words):
         data.append(index)
     # count[0][1] = unk_count
     reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
+    print("unk_count == ", unk_count)
     return data, count, dictionary, reverse_dictionary
 
 
@@ -184,7 +185,7 @@ with graph.as_default():
     # Add variable initializer.
     init = tf.global_variables_initializer()
 # Step 5: Begin training.
-num_steps = 100001
+num_steps = 70001
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
