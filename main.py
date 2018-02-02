@@ -271,7 +271,7 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 2 == 0 and b > 20:
+            if b % 25 == 0 and b > 100:
                 # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testing
                 test_batches = len(test_X) // BATCH_SIZE
