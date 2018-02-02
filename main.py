@@ -14,7 +14,7 @@ from attentionMulti import attentionMulti
 from attention import attention
 
 NUM_EPOCHS = 100
-BATCH_SIZE = 1
+BATCH_SIZE = 64
 HIDDEN_SIZE = 50
 USR_SIZE = 1310
 PRD_SIZE = 1635
@@ -273,9 +273,11 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 2 == 0 and b > 10:
+            if b % 5 == 0 and b > 10:
                 # print("accuracy_train" == accuracy_train / (b + 1))
-                # Testing
+                # Testin
+                accuracy_test = 0
+                print("origin_test == ", accuracy_test)
                 test_batches = len(test_X) // BATCH_SIZE
                 for z in range(test_batches):
                     x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
