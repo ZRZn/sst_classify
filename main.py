@@ -13,7 +13,7 @@ import numpy as np
 from attentionMulti import attentionMulti
 from attention import attention
 
-NUM_EPOCHS = 100
+NUM_EPOCHS = 10
 BATCH_SIZE = 64
 HIDDEN_SIZE = 50
 USR_SIZE = 1310
@@ -222,9 +222,9 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
+#attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
 
-#attention_output = attention(gru_out, ATTENTION_SIZE)
+attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -245,6 +245,7 @@ accuracy = tf.reduce_mean(tf.cast(tf.equal(predict, label), tf.float32))
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     print("Start learning...")
+    max_acc = 0
     for epoch in range(NUM_EPOCHS):
         loss_train = 0
         loss_test = 0
@@ -273,7 +274,7 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 3 == 0 and b > 10:
+            if b % 1 == 0 and b > 10:
                 # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testin
                 accuracy_test = 0
@@ -294,4 +295,7 @@ with tf.Session() as sess:
                     loss_test += loss_test_batch
                 accuracy_test /= test_batches
                 loss_test /= test_batches
+                if accuracy_test > max_acc:
+                    max_acc = accuracy_test
                 print("accuracy_test == ", accuracy_test)
+    print("max_accuracy == ", max_acc)
