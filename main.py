@@ -222,9 +222,9 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-#attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
+attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
 
-attention_output = attention(gru_out, ATTENTION_SIZE)
+#attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -273,7 +273,7 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 1 == 0 and b > 10:
+            if b % 3 == 0 and b > 10:
                 # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testin
                 accuracy_test = 0
