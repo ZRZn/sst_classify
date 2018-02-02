@@ -221,7 +221,7 @@ with tf.Session() as sess:
         accuracy_train = 0
         accuracy_test = 0
 
-        print("epoch: {}\t".format(epoch), end="")
+        print("epoch: ", epoch)
 
         # Training
         num_batches = len(train_X) // BATCH_SIZE
@@ -243,8 +243,8 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 20 == 0 and b > 100:
-                print("accuracy_train" == accuracy_train / (b + 1))
+            if b % 10 == 0 and b > 20:
+                # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testing
                 test_batches = len(test_X) // BATCH_SIZE
                 for z in range(test_batches):
