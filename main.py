@@ -10,8 +10,8 @@ from tensorflow.contrib.rnn import LSTMCell
 from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as bi_rnn
 from tensorflow.contrib.layers import fully_connected
 import numpy as np
+from attentionMulti import attentionMulti
 from attention import attention
-
 
 NUM_EPOCHS = 100
 BATCH_SIZE = 1
@@ -222,7 +222,9 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attention(gru_out, ATTENTION_SIZE, input_s)
+#attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
+
+attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
