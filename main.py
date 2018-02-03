@@ -12,8 +12,8 @@ from tensorflow.contrib.layers import fully_connected
 import numpy as np
 from attentionMulti import attentionMulti
 from attention import attention
-from sortData import sortData
-from getInput import read_data, read_y
+# from sortData import sortData
+# from getInput import read_data, read_y
 
 NUM_EPOCHS = 6
 BATCH_SIZE = 64
