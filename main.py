@@ -12,6 +12,8 @@ from tensorflow.contrib.layers import fully_connected
 import numpy as np
 from attentionMulti import attentionMulti
 from attention import attention
+from sortData import sortData
+from getInput import read_data, read_y
 
 NUM_EPOCHS = 10
 BATCH_SIZE = 64
@@ -29,16 +31,27 @@ NUM_DICT = 10000
 
 
 #Load Data
-train_fir = open(all_path + "train_out.pkl", "rb")
-test_fir = open(all_path + "test_out.pkl", "rb")
-train_X = pickle.load(train_fir)
-train_Y = pickle.load(train_fir)
-train_S = pickle.load(train_fir)
-test_X = pickle.load(test_fir)
-test_Y = pickle.load(test_fir)
-test_S = pickle.load(test_fir)
-train_fir.close()
-test_fir.close()
+# train_fir = open(all_path + "train_out.pkl", "rb")
+# test_fir = open(all_path + "test_out.pkl", "rb")
+# train_X = pickle.load(train_fir)
+# train_Y = pickle.load(train_fir)
+# train_S = pickle.load(train_fir)
+# test_X = pickle.load(test_fir)
+# test_Y = pickle.load(test_fir)
+# test_S = pickle.load(test_fir)
+# train_fir.close()
+# test_fir.close()
+
+
+
+
+train_X, train_S = read_data(origin_path + "train.txt")
+train_Y = read_y(origin_path + "train_label.txt")
+test_X, test_S = read_data(origin_path + "test.txt")
+test_Y = read_y(origin_path + "test_label.txt")
+
+
+
 
 batch_output = 0
 out_put = 0
@@ -65,131 +78,6 @@ def AttentionLayer(inputs, name):
         # reduce_sum之前shape为[batch_szie, max_time, hidden_szie*2]，之后shape为[batch_size, hidden_size*2]
         atten_output = tf.reduce_sum(tf.multiply(inputs, alpha), axis=1)
         return atten_output
-
-
-# def diffGRU(inputs, pos_neg, B, T, name='RNN'):
-#     # inputs, shape = (B, T, E)
-#     # pos_neg, shape = (B, T, 3)
-#     global output, batch_output
-#     with tf.variable_scope(name):
-#         # posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         # negGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         # medGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         flag = tf.cast(pos_neg, tf.bool)
-#
-#         output = 0
-#         def cond1(i, j):
-#             return i < B
-#
-#         def body1(i, j):
-#             global output, batch_output
-#             tf.get_variable_scope().reuse_variables()
-#             state = posGRU.zero_state(1, dtype=tf.float32)
-#
-#             batch_output = 0
-#             def cond2(in_i, j, h_state):
-#                 return j < T
-#
-#             def body2(in_i, j, h_state):
-#                 global batch_output
-#                 def MultiGRU(temp_value, temp_state, temp_np):
-#                     tf.get_variable_scope().reuse_variables()
-#                     if temp_np == 2:
-#                         return posGRU(temp_value, temp_state)
-#                     elif temp_np == 1:
-#                         return medGRU(temp_value, temp_state)
-#                     else:
-#                         return negGRU(temp_value, temp_state)
-#
-#                 temp_input = tf.reshape(inputs[in_i][j], [1, EMBEDDING_SIZE])
-#                 temp_out, h_state = tf.cond(flag[in_i][j][0], lambda: MultiGRU(temp_input, h_state, 2),
-#                                             lambda: tf.cond(flag[in_i][j][1],
-#                                                             lambda: MultiGRU(
-#                                                                 temp_input,
-#                                                                 h_state, 1),
-#                                                             lambda: MultiGRU(
-#                                                                 temp_input,
-#                                                                 h_state, 0)))
-#                 # batch_outputs.append(tf.reshape(temp_out, [HIDDEN_SIZE]))
-#                 if batch_output == 0:
-#                     batch_output = temp_out
-#                 else:
-#                     batch_output = tf.concat((batch_output, temp_out), axis=0)
-#                 j += 1
-#                 return in_i, j, h_state
-#
-#
-#             res = tf.while_loop(cond2, body2, (i, 0, state))
-#             if output == 0:
-#                 output = tf.reshape(batch_output, [-1, T, HIDDEN_SIZE])
-#             else:
-#                 output = tf.concat((output, tf.reshape(batch_output, [-1, T, HIDDEN_SIZE])))
-#             i += 1
-#             return i, j
-#         res_all = tf.while_loop(cond1, body1, (0, 0))
-#         return output
-#
-# def diffGRURev(inputs, pos_neg, B, T, name='RNN'):
-#     # inputs, shape = (B, T, E)
-#     # pos_neg, shape = (B, T, 3)
-#     global output, batch_output
-#     with tf.variable_scope(name):
-#         # posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         # negGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         # medGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
-#         flag = tf.cast(pos_neg, tf.bool)
-#
-#         output = 0
-#         def cond1(i, j):
-#             return i < B
-#
-#         def body1(i, j):
-#             global output, batch_output
-#             tf.get_variable_scope().reuse_variables()
-#             state = posGRU.zero_state(1, dtype=tf.float32)
-#
-#             batch_output = 0
-#             def cond2(in_i, j, h_state):
-#                 return j < T
-#
-#             def body2(in_i, j, h_state):
-#                 global batch_output
-#                 def MultiGRU(temp_value, temp_state, temp_np):
-#                     tf.get_variable_scope().reuse_variables()
-#                     if temp_np == 2:
-#                         return posGRU(temp_value, temp_state)
-#                     elif temp_np == 1:
-#                         return medGRU(temp_value, temp_state)
-#                     else:
-#                         return negGRU(temp_value, temp_state)
-#
-#                 temp_input = tf.reshape(inputs[in_i][sen_len_ph - j - 1], [1, EMBEDDING_SIZE])
-#                 temp_out, h_state = tf.cond(flag[in_i][sen_len_ph - j - 1][0], lambda: MultiGRU(temp_input, h_state, 2),
-#                                             lambda: tf.cond(flag[in_i][sen_len_ph - j - 1][1],
-#                                                             lambda: MultiGRU(
-#                                                                 temp_input,
-#                                                                 h_state, 1),
-#                                                             lambda: MultiGRU(
-#                                                                 temp_input,
-#                                                                 h_state, 0)))
-#                 # batch_outputs.append(tf.reshape(temp_out, [HIDDEN_SIZE]))
-#                 if batch_output == 0:
-#                     batch_output = temp_out
-#                 else:
-#                     batch_output = tf.concat((temp_out, batch_output), axis=0)
-#                 j += 1
-#                 return in_i, j, h_state
-#
-#
-#             res = tf.while_loop(cond2, body2, (i, 0, state))
-#             if output == 0:
-#                 output = tf.reshape(batch_output, [-1, T, HIDDEN_SIZE])
-#             else:
-#                 output = tf.concat((output, tf.reshape(batch_output, [-1, T, HIDDEN_SIZE])))
-#             i += 1
-#             return i, j
-#         res_all = tf.while_loop(cond1, body1, (0, 0))
-#         return output
 
 
 
