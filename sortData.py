@@ -64,19 +64,19 @@ train_x, train_y, train_s = sortData(train_x, train_y, train_s)
 test_x, test_y, test_s = sortData(test_x, test_y, test_s)
 
 
-# train_fir = open(all_path + "train_out.pkl", "wb")
-# test_fir = open(all_path + "test_out.pkl", "wb")
-#
-# pickle.dump(train_x, train_fir)
-# pickle.dump(train_y, train_fir)
-# pickle.dump(train_s, train_fir)
-#
-# pickle.dump(test_x, test_fir)
-# pickle.dump(test_y, test_fir)
-# pickle.dump(test_s, test_fir)
-#
-# train_fir.close()
-# test_fir.close()
+train_fir = open(all_path + "train_out.pkl", "wb")
+test_fir = open(all_path + "test_out.pkl", "wb")
+
+pickle.dump(train_x, train_fir)
+pickle.dump(train_y, train_fir)
+pickle.dump(train_s, train_fir)
+
+pickle.dump(test_x, test_fir)
+pickle.dump(test_y, test_fir)
+pickle.dump(test_s, test_fir)
+
+train_fir.close()
+test_fir.close()
 
 
 

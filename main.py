@@ -15,7 +15,7 @@ from attention import attention
 from sortData import sortData
 from getInput import read_data, read_y
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 6
 BATCH_SIZE = 64
 HIDDEN_SIZE = 50
 USR_SIZE = 1310
@@ -31,24 +31,24 @@ NUM_DICT = 10000
 
 
 #Load Data
-# train_fir = open(all_path + "train_out.pkl", "rb")
-# test_fir = open(all_path + "test_out.pkl", "rb")
-# train_X = pickle.load(train_fir)
-# train_Y = pickle.load(train_fir)
-# train_S = pickle.load(train_fir)
-# test_X = pickle.load(test_fir)
-# test_Y = pickle.load(test_fir)
-# test_S = pickle.load(test_fir)
-# train_fir.close()
-# test_fir.close()
+train_fir = open(all_path + "train_out.pkl", "rb")
+test_fir = open(all_path + "test_out.pkl", "rb")
+train_X = pickle.load(train_fir)
+train_Y = pickle.load(train_fir)
+train_S = pickle.load(train_fir)
+test_X = pickle.load(test_fir)
+test_Y = pickle.load(test_fir)
+test_S = pickle.load(test_fir)
+train_fir.close()
+test_fir.close()
 
 
 
 
-train_X, train_S = read_data(origin_path + "train.txt")
-train_Y = read_y(origin_path + "train_label.txt")
-test_X, test_S = read_data(origin_path + "test.txt")
-test_Y = read_y(origin_path + "test_label.txt")
+# train_X, train_S = read_data(origin_path + "train.txt")
+# train_Y = read_y(origin_path + "train_label.txt")
+# test_X, test_S = read_data(origin_path + "test.txt")
+# test_Y = read_y(origin_path + "test_label.txt")
 
 
 
@@ -110,9 +110,9 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-#attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
+attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
 
-attention_output = attention(gru_out, ATTENTION_SIZE)
+#attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -166,7 +166,7 @@ with tf.Session() as sess:
                 # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testin
                 accuracy_test = 0
-                print("origin_test == ", accuracy_test)
+                # print("origin_test == ", accuracy_test)
                 test_batches = len(test_X) // BATCH_SIZE
                 for z in range(test_batches):
                     x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
@@ -186,4 +186,5 @@ with tf.Session() as sess:
                 if accuracy_test > max_acc:
                     max_acc = accuracy_test
                 print("accuracy_test == ", accuracy_test)
+                print("max == ", max_acc)
     print("max_accuracy == ", max_acc)

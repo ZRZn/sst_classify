@@ -91,13 +91,13 @@ print('Most common words (+UNK)', count[:5])
 print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
 print('vocabulary_size == ', vocabulary_size)
 
-pFile = open(all_path + "dic.pkl", "wb")
+pFile = open(all_path + "dic2.pkl", "wb")
 pickle.dump(dictionary, pFile)
 pFile.close()
 
-pFile2 = open(all_path + "rev_dic.pkl", "wb")
-pickle.dump(reverse_dictionary, pFile2)
-pFile2.close()
+# pFile2 = open(all_path + "rev_dic.pkl", "wb")
+# pickle.dump(reverse_dictionary, pFile2)
+# pFile2.close()
 
 data_index = 0
 
@@ -185,7 +185,7 @@ with graph.as_default():
     # Add variable initializer.
     init = tf.global_variables_initializer()
 # Step 5: Begin training.
-num_steps = 70001
+num_steps = 100001
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
@@ -223,6 +223,6 @@ with tf.Session(graph=graph) as session:
                     log_str = "%s %s," % (log_str, close_word)
                 print(log_str)
     final_embeddings = normalized_embeddings.eval()
-    emb_file = open(all_path + "emb_array.pkl", "wb")
+    emb_file = open(all_path + "emb_array22.pkl", "wb")
     pickle.dump(final_embeddings, emb_file)
     emb_file.close()
