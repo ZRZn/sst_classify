@@ -57,10 +57,12 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
     hidden_size = inputs.shape[2].value  # D value - hidden size of the RNN layer
 
-
+    W = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    b = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    v = tf.tanh(tf.tensordot(inputs, W, axes=1) + b)
     # Pos
-    W_pos = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_pos = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    # W_pos = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    # b_pos = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
     u_pos = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
@@ -72,8 +74,8 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
 
     # meg
-    W_med = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    # W_med = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    # b_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
     u_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
@@ -85,8 +87,8 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
 
     # neg
-    W_neg = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_neg = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    # W_neg = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    # b_neg = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
     u_neg = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
@@ -109,14 +111,14 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
         def body(i, vus):
             def getAttention(flag):
                 if flag == 0:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_neg, axes=1) + b_neg)
-                    vu = tf.tensordot(v, u_neg, axes=1)
+                    # v = tf.tanh(tf.tensordot(inputs[t, i, :], W_neg, axes=1) + b_neg)
+                    vu = tf.tensordot(v[t, i, :], u_neg, axes=1)
                 elif flag == 1:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b_med)
-                    vu = tf.tensordot(v, u_med, axes=1)
+                    # v = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b_med)
+                    vu = tf.tensordot(v[t, i, :], u_med, axes=1)
                 else:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_pos, axes=1) + b_pos)
-                    vu = tf.tensordot(v, u_pos, axes=1)
+                    # v = tf.tanh(tf.tensordot(inputs[t, i, :], W_pos, axes=1) + b_pos)
+                    vu = tf.tensordot(v[t, i, :], u_pos, axes=1)
                 return vu
 
             vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
