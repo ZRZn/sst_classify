@@ -99,7 +99,6 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     # vu = vu_pos * s[:, :, 2] + vu_med * s[:, :, 1] + vu_neg * s[:, :, 0]
 
 
-
     t = tf.constant(0)
     def cond_out(t, vu_final):
         return t < BATCH_SIZE
@@ -109,7 +108,6 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
             return i < sen_len
         def body(i, vus):
             def getAttention(flag):
-                global vu_all
                 if flag == 0:
                     v = tf.tanh(tf.tensordot(inputs[t, i, :], W_neg, axes=1) + b_neg)
                     vu = tf.tensordot(v, u_neg, axes=1)

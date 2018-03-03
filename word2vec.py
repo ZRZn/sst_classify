@@ -65,7 +65,7 @@ def build_dataset(words):
     # for word, _ in count:
     #   dictionary[word] = len(dictionary)
     for word in count:
-        if word[1] >= 2:
+        if word[1] >= 1:
             dictionary[word[0]] = len(dictionary)
     data = list()
     unk_count = 0
@@ -185,7 +185,7 @@ with graph.as_default():
     # Add variable initializer.
     init = tf.global_variables_initializer()
 # Step 5: Begin training.
-num_steps = 100001
+num_steps = 70001
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.

@@ -10,9 +10,10 @@ from path import *
 word_cut = WordPunctTokenizer()
 tokenizer = nltk.data.load(nltk_path)
 
-dic_fir = open(all_path + "dic.pkl", "rb")
+dic_fir = open(all_path + "dic2.pkl", "rb")
 dictionary = pickle.load(dic_fir)
 dic_fir.close()
+print("dic_len == ", len(dictionary))
 
 sen_fir = open(all_path + "sen_dict.pkl", "rb")
 sen_dic = pickle.load(sen_fir)

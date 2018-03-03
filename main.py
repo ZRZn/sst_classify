@@ -18,15 +18,12 @@ from attention import attention
 NUM_EPOCHS = 6
 BATCH_SIZE = 64
 HIDDEN_SIZE = 50
-USR_SIZE = 1310
-PRD_SIZE = 1635
 EMBEDDING_SIZE = 200
 ATTENTION_SIZE = 100
 KEEP_PROB = 0.8
 DELTA = 0.5
 Y_Class = 5
 SEN_CLASS = 3
-NUM_DICT = 10000
 
 
 
@@ -102,21 +99,18 @@ def AttentionLayer(inputs, name):
 #placeholders
 
 input_x = tf.placeholder(tf.int32, [BATCH_SIZE, None])
-input_x_rev = tf.placeholder(tf.int32, [BATCH_SIZE, None])
 input_y = tf.placeholder(tf.int32, [BATCH_SIZE, Y_Class])
 input_s = tf.placeholder(tf.int32, [BATCH_SIZE, None, SEN_CLASS])
-input_s_rev = tf.placeholder(tf.int32, [BATCH_SIZE, None, SEN_CLASS])
 sen_len_ph = tf.placeholder(tf.int32)
 keep_prob_ph = tf.placeholder(tf.float32)
 
 
 #Embedding Layer
-emd_file = open(all_path + "emb_array.pkl", "rb")
+emd_file = open(all_path + "emb_array22.pkl", "rb")
 emb_array = pickle.load(emd_file)
 emd_file.close()
 embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
-input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 
 # # DIFF-GRU Layer
 # gru_output = diffGRU(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN')
