@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pickle
 from path import *
@@ -65,8 +65,10 @@ sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Desktop/lexicon/Amazon-laptop-electr
 
 
 
-print("pos_num == ", pos_num)
-print("med_num == ", med_num)
-print("neg_num == ", neg_num)
+# print("pos_num == ", pos_num)
+# print("med_num == ", med_num)
+# print("neg_num == ", neg_num)
+#
+# print(", == ", sen_dic['...'])
 f_dict = open(all_path + "sen_dict.pkl", "wb")
 pickle.dump(sen_dic, f_dict)

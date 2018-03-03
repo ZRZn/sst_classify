@@ -43,8 +43,26 @@ train_fir.close()
 test_fir.close()
 
 
-
-
+#getTrainBatchData
+# num_batches = len(train_X) // BATCH_SIZE
+#
+# print("num_batches == ", num_batches)
+#
+# train_batches = []
+# for i in range(NUM_EPOCHS):
+#     train1 = np.arange(num_batches)
+#     np.random.shuffle(train1)
+#     train_batches.append(train1)
+#
+# batch_lens = []
+# for train_batch in train_batches:
+#     batch_len = []
+#     for locate in train_batch:
+#         batch_len.append(len(train_X[locate * BATCH_SIZE]))
+#     batch_lens.append(batch_len)
+#
+# for batch_len in batch_lens:
+#     print(batch_len)
 # train_X, train_S = read_data(origin_path + "train.txt")
 # train_Y = read_y(origin_path + "train_label.txt")
 # test_X, test_S = read_data(origin_path + "test.txt")
@@ -110,9 +128,9 @@ input_emd_rev = tf.nn.embedding_lookup(embeddings, input_x_rev)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s)
+attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-#attention_output = attention(gru_out, ATTENTION_SIZE)
+# attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -162,7 +180,7 @@ with tf.Session() as sess:
                                                   keep_prob_ph: KEEP_PROB})
             accuracy_train += acc
             loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 1 == 0 and b > 10:
+            if b % 1 == 0 and b > 20:
                 # print("accuracy_train" == accuracy_train / (b + 1))
                 # Testin
                 accuracy_test = 0
