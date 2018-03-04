@@ -15,8 +15,8 @@ from attention import attention
 # from sortData import sortData
 # from getInput import read_data, read_y
 
-NUM_EPOCHS = 6
-BATCH_SIZE = 8
+NUM_EPOCHS = 5
+BATCH_SIZE = 32
 HIDDEN_SIZE = 50
 EMBEDDING_SIZE = 200
 ATTENTION_SIZE = 100
@@ -92,9 +92,9 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-# attention_output = attention(gru_out, ATTENTION_SIZE)
+attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -112,61 +112,66 @@ predict = tf.argmax(full_out, axis=1, name='predict')
 label = tf.argmax(input_y, axis=1, name='label')
 accuracy = tf.reduce_mean(tf.cast(tf.equal(predict, label), tf.float32))
 
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    print("Start learning...")
-    max_acc = 0
-    for epoch in range(NUM_EPOCHS):
-        loss_train = 0
-        loss_test = 0
-        accuracy_train = 0
-        accuracy_test = 0
+def start_train():
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        print("Start learning...")
+        max_acc = 0
+        for epoch in range(NUM_EPOCHS):
+            loss_train = 0
+            loss_test = 0
+            accuracy_train = 0
+            accuracy_test = 0
 
-        print("epoch: ", epoch)
+            print("epoch: ", epoch)
 
-        # Training
-        num_batches = len(train_X) // BATCH_SIZE
+            # Training
+            num_batches = len(train_X) // BATCH_SIZE
 
-        indices = np.arange(num_batches)
-        np.random.shuffle(indices)
+            indices = np.arange(num_batches)
+            np.random.shuffle(indices)
 
-        for b in range(num_batches):
-            count = indices[b]
-            x_train = train_X[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
-            y_train = train_Y[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
-            s_train = train_S[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
-            sen_len = len(x_train[0])
-            loss_tr, acc, _ = sess.run([loss, accuracy, optimizer],
-                                       feed_dict={input_x: x_train,
-                                                  input_y: y_train,
-                                                  input_s: s_train,
-                                                  sen_len_ph: sen_len,
-                                                  keep_prob_ph: KEEP_PROB})
-            accuracy_train += acc
-            loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-            if b % 1 == 0 and b > 200:
-                # print("accuracy_train" == accuracy_train / (b + 1))
-                # Testin
-                accuracy_test = 0
-                # print("origin_test == ", accuracy_test)
-                test_batches = len(test_X) // BATCH_SIZE
-                for z in range(test_batches):
-                    x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
-                    y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
-                    s_test = test_S[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
-                    test_len = len(x_test[0])
-                    loss_test_batch, test_acc = sess.run([loss, accuracy],
-                                                         feed_dict={input_x: x_test,
-                                                                    input_y: y_test,
-                                                                    input_s: s_test,
-                                                                    sen_len_ph: test_len,
-                                                                    keep_prob_ph: 1.0})
-                    accuracy_test += test_acc
-                    loss_test += loss_test_batch
-                accuracy_test /= test_batches
-                loss_test /= test_batches
-                if accuracy_test > max_acc:
-                    max_acc = accuracy_test
-                print("accuracy_test == ", accuracy_test)
-                print("epoch = ", epoch, "max == ", max_acc)
-    print("max_accuracy == ", max_acc)
+            for b in range(num_batches):
+                count = indices[b]
+                x_train = train_X[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
+                y_train = train_Y[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
+                s_train = train_S[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
+                sen_len = len(x_train[0])
+                loss_tr, acc, _ = sess.run([loss, accuracy, optimizer],
+                                           feed_dict={input_x: x_train,
+                                                      input_y: y_train,
+                                                      input_s: s_train,
+                                                      sen_len_ph: sen_len,
+                                                      keep_prob_ph: KEEP_PROB})
+                accuracy_train += acc
+                loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
+                if b % 1 == 0:
+                    # print("accuracy_train" == accuracy_train / (b + 1))
+                    # Testin
+                    accuracy_test = 0
+                    # print("origin_test == ", accuracy_test)
+                    test_batches = len(test_X) // BATCH_SIZE
+                    for z in range(test_batches):
+                        x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
+                        y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
+                        s_test = test_S[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
+                        test_len = len(x_test[0])
+                        loss_test_batch, test_acc = sess.run([loss, accuracy],
+                                                             feed_dict={input_x: x_test,
+                                                                        input_y: y_test,
+                                                                        input_s: s_test,
+                                                                        sen_len_ph: test_len,
+                                                                        keep_prob_ph: 1.0})
+                        accuracy_test += test_acc
+                        loss_test += loss_test_batch
+                    accuracy_test /= test_batches
+                    loss_test /= test_batches
+                    if accuracy_test > max_acc:
+                        max_acc = accuracy_test
+                    print("accuracy_test == ", accuracy_test)
+                    print("epoch = ", epoch, "max == ", max_acc)
+
+        print("max_accuracy == ", max_acc)
+        return max_acc
+
+max_acc = start_train()

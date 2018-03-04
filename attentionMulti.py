@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False, return_alphas=False):
+def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
     """
     Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
@@ -145,7 +145,4 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    if not return_alphas:
-        return output
-    else:
-        return output, alphas
+    return output

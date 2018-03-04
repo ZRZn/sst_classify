@@ -10,7 +10,7 @@ from path import *
 word_cut = WordPunctTokenizer()
 tokenizer = nltk.data.load(nltk_path)
 
-dic_fir = open(all_path + "dic2.pkl", "rb")
+dic_fir = open(all_path + "dic.pkl", "rb")
 dictionary = pickle.load(dic_fir)
 dic_fir.close()
 print("dic_len == ", len(dictionary))
@@ -25,6 +25,8 @@ med_num = 0
 
 un_num = 0
 yes_num = 0
+in_num = 0
+out_num = 0
 # print("pos_num == ", pos_num)
 # print("med_num == ", med_num)
 # print("neg_num == ", neg_num)
