@@ -92,9 +92,9 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-# attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-attention_output = attention(gru_out, ATTENTION_SIZE)
+# attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
