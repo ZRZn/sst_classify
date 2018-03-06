@@ -6,12 +6,12 @@ import pickle
 from path import all_path
 
 
-f = open(all_path + "result.pkl", "wb")
-
 result = []
-for i in range(10):
+for i in range(15):
     acc = start_train()
     result.append(acc)
 
+print("result == ", result)
+f = open(all_path + "multi_res.pkl", "wb")
 pickle.dump(result, f)
 f.close()

@@ -206,15 +206,15 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
             vus = tf.concat((vus, [vu]), axis=0)
             i += 1
             return i, vus
-
-        i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
-                                shape_invariants=(i.get_shape(), tf.TensorShape([None])))
+        zero_v = tf.Variable(0, dtype=tf.int32)
+        vuss = tf.zeros((zero_v, attention_size))
+        i, vuss = tf.while_loop(conded, body, (i, vuss))
         vu_final = tf.concat((vu_final, [vuss]), axis=0)
         t += 1
         return t, vu_final
 
     zero = tf.Variable(0, dtype=tf.int32)
-    vu_final = tf.zeros((zero, sen_len))
+    vu_final = tf.zeros((zero, sen_len, attention_size))
     t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
     vu_final = tf.tensordot(vu_final, u, axes=1)
 
