@@ -76,7 +76,7 @@ keep_prob_ph = tf.placeholder(tf.float32)
 
 
 #Embedding Layer
-emd_file = open(all_path + "emb_array22.pkl", "rb")
+emd_file = open(all_path + "emb_array.pkl", "rb")
 emb_array = pickle.load(emd_file)
 emd_file.close()
 embeddings = tf.Variable(emb_array, trainable=True)
