@@ -16,7 +16,7 @@ from attention import attention
 # from getInput import read_data, read_y
 
 NUM_EPOCHS = 5
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 HIDDEN_SIZE = 50
 EMBEDDING_SIZE = 200
 ATTENTION_SIZE = 100
