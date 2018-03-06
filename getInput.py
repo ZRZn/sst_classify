@@ -10,7 +10,7 @@ from path import *
 word_cut = WordPunctTokenizer()
 tokenizer = nltk.data.load(nltk_path)
 
-dic_fir = open(all_path + "dic.pkl", "rb")
+dic_fir = open(all_path + "dic_glove_sst.pkl", "rb")
 dictionary = pickle.load(dic_fir)
 dic_fir.close()
 print("dic_len == ", len(dictionary))
@@ -38,6 +38,8 @@ def read_data(file_path):
     f = open(file_path, "r")
     for line in f:
         words = word_cut.tokenize(line)
+        for i in range(len(words)):
+            words[i] = words[i].lower()
         word_int = []
         for word in words:
             if word not in dictionary:

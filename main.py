@@ -15,11 +15,11 @@ from attention import attention
 # from sortData import sortData
 # from getInput import read_data, read_y
 
-NUM_EPOCHS = 5
-BATCH_SIZE = 16
-HIDDEN_SIZE = 50
+NUM_EPOCHS = 4
+BATCH_SIZE = 32
+HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
-ATTENTION_SIZE = 100
+ATTENTION_SIZE = 200
 KEEP_PROB = 0.8
 DELTA = 0.5
 Y_Class = 5
@@ -92,9 +92,9 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-# attention_output = attention(gru_out, ATTENTION_SIZE)
+attention_output = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 

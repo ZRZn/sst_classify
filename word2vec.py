@@ -40,7 +40,10 @@ def read_data(file_path_list):
     for file_path in file_path_list:
         f = open(file_path, "r")
         for line in f:
-            data.extend(word_cut.tokenize(line))
+            temp_word = word_cut.tokenize(line)
+            for i in range(len(temp_word)):
+                temp_word[i] = temp_word[i].lower()
+            data.extend(temp_word)
         f.close()
     return data
 
@@ -61,11 +64,11 @@ def build_dataset(words):
     count = count.most_common(len(count))
 
     dictionary = dict()
-    dictionary['UNK'] = 0
+    dictionary['unk'] = 0
     # for word, _ in count:
     #   dictionary[word] = len(dictionary)
     for word in count:
-        if word[1] >= 1:
+        if word[1] >= 0:
             dictionary[word[0]] = len(dictionary)
     data = list()
     unk_count = 0

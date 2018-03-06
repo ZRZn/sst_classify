@@ -26,7 +26,7 @@ assert len(test_x) == len(test_y) == len(test_s)
 # for i in range(len(train_x)):
 #     print(train_x[i])
 
-def sortData(x, y, s, BATCH_SIZE=16):
+def sortData(x, y, s, BATCH_SIZE=32):
     for i in range(len(x)):
         if len(x[i]) != len(s[i]):
             print("出错了！！！")

@@ -7,7 +7,7 @@ from path import all_path
 
 
 result = []
-for i in range(15):
+for i in range(5):
     acc = start_train()
     result.append(acc)
 
