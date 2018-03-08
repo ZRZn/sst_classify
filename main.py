@@ -15,7 +15,7 @@ from attention import attention
 # from sortData import sortData
 # from getInput import read_data, read_y
 
-NUM_EPOCHS = 4
+NUM_EPOCHS = 3
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -172,6 +172,8 @@ def start_train():
                     print("epoch = ", epoch, "max == ", max_acc)
 
         print("max_accuracy == ", max_acc)
+        gru_out_put = gru_out.eval()
+        print("gru_out = ", gru_out_put[13])
         return max_acc
 
 max_acc = start_train()
