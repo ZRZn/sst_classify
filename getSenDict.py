@@ -72,3 +72,14 @@ sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Desktop/lexicon/Amazon-laptop-electr
 # print(", == ", sen_dic['...'])
 f_dict = open(all_path + "sen_dict.pkl", "wb")
 pickle.dump(sen_dic, f_dict)
+
+
+#pos + neg = med
+# sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Downloads/sentiment_lexicon_set/SCL-OPP/SCL-OPP.txt", -0.47, 0.30)
+# sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Downloads/sentiment_lexicon_set/SCL-NMA/SCL-NMA.txt", -0.4, 0.4)
+# sen_dic = getSenDictRev(sen_dic, "/Users/ZRZn1/Downloads/sentiment_lexicon_set/SemEval2015-English-Twitter-Lexicon/SemEval2015-English-Twitter-Lexicon.txt", -0.38, 0.38, 1, 0)
+#
+# sen_dic = getSenDict(sen_dic,"/Users/ZRZn1/Desktop/lexicon/Yelp-restaurant-reviews/Yelp-restaurant-reviews-AFFLEX-NEGLEX-unigrams.txt", -0.451, 0.64)
+# sen_dic = getSenDict(sen_dic,"/Users/ZRZn1/Desktop/lexicon/Yelp-restaurant-reviews/Yelp-restaurant-reviews-AFFLEX-NEGLEX-bigrams.txt", -0.23, 0.865)
+# sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Desktop/lexicon/Amazon-laptop-electronics-reviews/Amazon-laptops-electronics-reviews-AFFLEX-NEGLEX-unigrams.txt", -0.39, 0.46)
+# sen_dic = getSenDict(sen_dic, "/Users/ZRZn1/Desktop/lexicon/Amazon-laptop-electronics-reviews/Amazon-laptops-electronics-reviews-AFFLEX-NEGLEX-bigrams.txt", -0.02, 0.844)

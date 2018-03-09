@@ -15,7 +15,7 @@ from attention import attention
 # from sortData import sortData
 # from getInput import read_data, read_y
 
-NUM_EPOCHS = 3
+NUM_EPOCHS = 4
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
