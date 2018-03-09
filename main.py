@@ -92,15 +92,15 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-# attention_output = attention(gru_out, ATTENTION_SIZE)
+attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
 w_full = tf.Variable(tf.truncated_normal([HIDDEN_SIZE * 2, Y_Class], stddev=0.1))
-b_full = b = tf.Variable(tf.constant(0., shape=[Y_Class]))
+b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
 #Loss
@@ -114,6 +114,9 @@ accuracy = tf.reduce_mean(tf.cast(tf.equal(predict, label), tf.float32))
 
 def start_train():
     with tf.Session() as sess:
+        w_max = None
+        b_max = None
+        u_max = None
         sess.run(tf.global_variables_initializer())
         print("Start learning...")
         max_acc = 0
@@ -168,10 +171,16 @@ def start_train():
                     loss_test /= test_batches
                     if accuracy_test > max_acc:
                         max_acc = accuracy_test
+                        w_max = w_a
+                        b_max = b_omega
+                        u_max = u_omega
                     print("accuracy_test == ", accuracy_test)
                     print("epoch = ", epoch, "max == ", max_acc)
 
         print("max_accuracy == ", max_acc)
-        return max_acc
+        w_out = w_max.eval()
+        b_out = b_max.eval()
+        u_out = u_max.eval()
+        return max_acc, w_out, b_out, u_out
 
-max_acc = start_train()
+# max_acc = start_train()

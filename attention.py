@@ -3,7 +3,7 @@
 
 import tensorflow as tf
 
-def attention(inputs, attention_size, time_major=False, return_alphas=False):
+def attention(inputs, attention_size, time_major=False):
     """
     Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
@@ -77,7 +77,5 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    if not return_alphas:
-        return output
-    else:
-        return output, alphas
+    return output, W_a, b_omega, u_omega
+
