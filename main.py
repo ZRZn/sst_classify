@@ -172,8 +172,6 @@ def start_train():
                     print("epoch = ", epoch, "max == ", max_acc)
 
         print("max_accuracy == ", max_acc)
-        gru_out_put = gru_out.eval()
-        print("gru_out = ", gru_out_put[13])
         return max_acc
 
 max_acc = start_train()
