@@ -39,9 +39,9 @@ test_Y = pickle.load(test_fir)
 test_S = pickle.load(test_fir)
 train_fir.close()
 test_fir.close()
-rev_f = open(all_path + "rev_dict.pkl", "rb")
-rev_dic = pickle.load(rev_f)
-rev_f.close()
+# rev_f = open(all_path + "rev_dict.pkl", "rb")
+# rev_dic = pickle.load(rev_f)
+# rev_f.close()
 
 
 # posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
