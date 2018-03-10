@@ -208,4 +208,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, w_max, bp_max, bm_max, bn_max, up_max, um_max, un_max
 
-max_acc = start_train()
+# max_acc = start_train()
