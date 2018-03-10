@@ -10,7 +10,7 @@ b_o = pickle.load(f)
 u_o = pickle.load(f)
 f.close()
 
-def attention(inputs, attention_size, time_major=False):
+def attentionOri(inputs, attention_size, time_major=False):
 
     if isinstance(inputs, tuple):
         # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
@@ -24,9 +24,9 @@ def attention(inputs, attention_size, time_major=False):
 
 
     # Trainable parameters
-    W_a = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_omega = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
-    u_omega = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    W_a = tf.Variable(w_o, trainable=False)
+    b_omega = tf.Variable(b_o, trainable=False)
+    u_omega = tf.Variable(u_o, trainable=False)
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -40,5 +40,4 @@ def attention(inputs, attention_size, time_major=False):
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    return output, W_a, b_omega, u_omega
-
+    return output, alphas
