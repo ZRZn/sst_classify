@@ -108,7 +108,7 @@ b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
 #Loss
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_y, logits=full_out))
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
 
 # Accuracy metric
@@ -208,4 +208,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, w_max, bp_max, bm_max, bn_max, up_max, um_max, un_max
 
-# max_acc = start_train()
+max_acc = start_train()

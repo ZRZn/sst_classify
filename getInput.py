@@ -27,12 +27,22 @@ un_num = 0
 yes_num = 0
 in_num = 0
 out_num = 0
+
+three_count = 0
+two_count = 0
 # print("pos_num == ", pos_num)
 # print("med_num == ", med_num)
 # print("neg_num == ", neg_num)
+def getSingle(word):
+    temp_sen = [0, 0, 0]
+    if word not in sen_dic:
+        temp_sen[1] = 1
+    else:
+        temp_sen[sen_dic[word]] = 1
+    return temp_sen
 
 def read_data(file_path):
-    global un_num, yes_num
+    global un_num, yes_num, three_count, two_count
     data = list()
     sen_data = list()
     f = open(file_path, "r")
@@ -56,18 +66,20 @@ def read_data(file_path):
             temp_sen = [0, 0, 0]
             if trigram in sen_dic:
                 temp_sen[sen_dic[trigram]] = 1
-                senti_int.append(temp_sen)
-                senti_int.append(temp_sen)
+                senti_int.append(getSingle(words[i]))
+                senti_int.append(getSingle(words[i + 1]))
                 senti_int.append(temp_sen)
                 i += 3
                 yes_num += 3
+                three_count += 1
                 continue
             elif bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
-                senti_int.append(temp_sen)
+                senti_int.append(getSingle(words[i]))
                 senti_int.append(temp_sen)
                 i += 2
                 yes_num += 2
+                two_count += 1
                 continue
             elif words[i] in sen_dic:
                 temp_sen[sen_dic[words[i]]] = 1
@@ -160,6 +172,8 @@ for s in train_s:
 print("pos == ", pos)
 print("neg == ", neg)
 print("med == ", med)
+print("three_count == ", three_count)
+print("two_count == ", two_count)
 
 train_fir = open(all_path + "train.pkl", "wb")
 test_fir = open(all_path + "test.pkl", "wb")

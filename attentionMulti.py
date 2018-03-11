@@ -71,7 +71,7 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
     # Pos
     W_pos = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
-    b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.168, stddev=0.1))
+    b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
     u_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.02, stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
@@ -97,7 +97,7 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
     # neg
     W_neg = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
-    b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.168, stddev=0.1))
+    b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
     u_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.02, stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
