@@ -95,9 +95,9 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-attention_output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 # attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
@@ -114,18 +114,19 @@ optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
 # Accuracy metric
 predict = tf.argmax(full_out, axis=1, name='predict')
 label = tf.argmax(input_y, axis=1, name='label')
-accuracy = tf.reduce_mean(tf.cast(tf.equal(predict, label), tf.float32))
+equal = tf.equal(predict, label)
+accuracy = tf.reduce_mean(tf.cast(equal, tf.float32))
 
 def start_train():
     with tf.Session() as sess:
-        w_max = None
-        bp_max = None
-        bm_max = None
-        bn_max = None
-        up_max = None
-        um_max = None
-        un_max = None
-
+        # w_max = None
+        # bp_max = None
+        # bm_max = None
+        # bn_max = None
+        # up_max = None
+        # um_max = None
+        # un_max = None
+        res_max = None
         sess.run(tf.global_variables_initializer())
         print("Start learning...")
         max_acc = 0
@@ -163,12 +164,13 @@ def start_train():
                     accuracy_test = 0
                     # print("origin_test == ", accuracy_test)
                     test_batches = len(test_X) // BATCH_SIZE
+                    result_tag = []
                     for z in range(test_batches):
                         x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         s_test = test_S[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         test_len = len(x_test[0])
-                        test_alphas, loss_test_batch, test_acc = sess.run([alphas, loss, accuracy],
+                        loss_test_batch, test_predict, test_label, test_equal, test_acc = sess.run([loss, predict, label, equal, accuracy],
                                                              feed_dict={input_x: x_test,
                                                                         input_y: y_test,
                                                                         input_s: s_test,
@@ -177,9 +179,13 @@ def start_train():
                         accuracy_test += test_acc
                         loss_test += loss_test_batch
 
-
+                        add_value = []
+                        assert len(test_predict) == len(test_label) == len(test_equal)
+                        for i in range(len(test_equal)):
+                            add_value.append((test_equal[i], test_predict[i], test_label[i]))
+                        result_tag.extend(add_value)
                         #out
-                        out_s = s_test[14]
+                        # out_s = s_test[14]
                         # for e in range(len(out_s)):
                         #     emo = ""
                         #     if out_s[e][0] == 1:
@@ -194,18 +200,20 @@ def start_train():
                     loss_test /= test_batches
                     if accuracy_test > max_acc:
                         max_acc = accuracy_test
-                        w_max = W.eval()
-                        bp_max = b_pos.eval()
-                        bm_max = b_med.eval()
-                        bn_max = b_neg.eval()
-                        up_max = u_pos.eval()
-                        um_max = u_med.eval()
-                        un_max = u_neg.eval()
+                        res_max = result_tag
+                        print(res_max)
+                        # w_max = W.eval()
+                        # bp_max = b_pos.eval()
+                        # bm_max = b_med.eval()
+                        # bn_max = b_neg.eval()
+                        # up_max = u_pos.eval()
+                        # um_max = u_med.eval()
+                        # un_max = u_neg.eval()
                     print("accuracy_test == ", accuracy_test)
                     print("epoch = ", epoch, "max == ", max_acc)
 
 
         print("max_accuracy == ", max_acc)
-        return max_acc, w_max, bp_max, bm_max, bn_max, up_max, um_max, un_max
+        return max_acc, res_max
 
-max_acc = start_train()
+# max_acc = start_train()
