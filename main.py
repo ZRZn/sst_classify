@@ -13,6 +13,7 @@ import numpy as np
 from attentionMulti import attentionMulti
 from attention import attention
 from attentionOri import attentionOri
+from attentionMultiTest import attentionMultiTest
 # from sortData import sortData
 # from getInput import read_data, read_y
 
@@ -39,9 +40,9 @@ test_Y = pickle.load(test_fir)
 test_S = pickle.load(test_fir)
 train_fir.close()
 test_fir.close()
-# rev_f = open(all_path + "rev_dict.pkl", "rb")
-# rev_dic = pickle.load(rev_f)
-# rev_f.close()
+rev_f = open(all_path + "rev_dict.pkl", "rb")
+rev_dic = pickle.load(rev_f)
+rev_f.close()
 
 
 # posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
@@ -96,6 +97,7 @@ gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
 attention_output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg = attentionMultiTest(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
 # attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 # attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
@@ -108,7 +110,7 @@ b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
 #Loss
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_y, logits=full_out))
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
 
 # Accuracy metric
@@ -194,18 +196,19 @@ def start_train():
                     loss_test /= test_batches
                     if accuracy_test > max_acc:
                         max_acc = accuracy_test
-                        w_max = W.eval()
-                        bp_max = b_pos.eval()
-                        bm_max = b_med.eval()
-                        bn_max = b_neg.eval()
-                        up_max = u_pos.eval()
-                        um_max = u_med.eval()
-                        un_max = u_neg.eval()
+                        # w_max = W.eval()
+                        # bp_max = b_pos.eval()
+                        # bm_max = b_med.eval()
+                        # bn_max = b_neg.eval()
+                        # up_max = u_pos.eval()
+                        # um_max = u_med.eval()
+                        # un_max = u_neg.eval()
                     print("accuracy_test == ", accuracy_test)
                     print("epoch = ", epoch, "max == ", max_acc)
 
 
         print("max_accuracy == ", max_acc)
-        return max_acc, w_max, bp_max, bm_max, bn_max, up_max, um_max, un_max
+        # return max_acc, w_max, bp_max, bm_max, bn_max, up_max, um_max, un_max
+        return max_acc
 
-# max_acc = start_train()
+max_acc = start_train()
