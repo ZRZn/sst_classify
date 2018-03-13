@@ -15,7 +15,7 @@ dictionary = pickle.load(dic_fir)
 dic_fir.close()
 print("dic_len == ", len(dictionary))
 
-sen_fir = open(all_path + "sen_dict.pkl", "rb")
+sen_fir = open(all_path + "default_dic.pkl", "rb")
 sen_dic = pickle.load(sen_fir)
 sen_fir.close()
 

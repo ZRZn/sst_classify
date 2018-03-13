@@ -14,50 +14,7 @@ f.close()
 # b_o = tf.Variable(b_o, trainable=True)
 # u_o = tf.Variable(u_o, trainable=True)
 def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
-    """
-    Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
-    The idea was proposed in the article by Z. Yang et al., "Hierarchical Attention Networks
-     for Document Classification", 2016: http://www.aclweb.org/anthology/N16-1174.
-    Variables notation is also inherited from the article
-
-    Args:
-        inputs: The Attention inputs.
-            Matches outputs of RNN/Bi-RNN layer (not final state):
-                In case of RNN, this must be RNN outputs `Tensor`:
-                    If time_major == False (default), this must be a tensor of shape:
-                        `[batch_size, max_time, cell.output_size]`.
-                    If time_major == True, this must be a tensor of shape:
-                        `[max_time, batch_size, cell.output_size]`.
-                In case of Bidirectional RNN, this must be a tuple (outputs_fw, outputs_bw) containing the forward and
-                the backward RNN outputs `Tensor`.
-                    If time_major == False (default),
-                        outputs_fw is a `Tensor` shaped:
-                        `[batch_size, max_time, cell_fw.output_size]`
-                        and outputs_bw is a `Tensor` shaped:
-                        `[batch_size, max_time, cell_bw.output_size]`.
-                    If time_major == True,
-                        outputs_fw is a `Tensor` shaped:
-                        `[max_time, batch_size, cell_fw.output_size]`
-                        and outputs_bw is a `Tensor` shaped:
-                        `[max_time, batch_size, cell_bw.output_size]`.
-        attention_size: Linear size of the Attention weights.
-        time_major: The shape format of the `inputs` Tensors.
-            If true, these `Tensors` must be shaped `[max_time, batch_size, depth]`.
-            If false, these `Tensors` must be shaped `[batch_size, max_time, depth]`.
-            Using `time_major = True` is a bit more efficient because it avoids
-            transposes at the beginning and end of the RNN calculation.  However,
-            most TensorFlow data is batch-major, so by default this function
-            accepts input and emits output in batch-major form.
-        return_alphas: Whether to return attention coefficients variable along with layer's output.
-            Used for visualization purpose.
-    Returns:
-        The Attention output `Tensor`.
-        In case of RNN, this will be a `Tensor` shaped:
-            `[batch_size, cell.output_size]`.
-        In case of Bidirectional RNN, this will be a `Tensor` shaped:
-            `[batch_size, cell_fw.output_size + cell_bw.output_size]`.
-    """
     if isinstance(inputs, tuple):
         # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
         inputs = tf.concat(inputs, 2)
@@ -72,7 +29,7 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     # Pos
     W_pos = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
     b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.02, stddev=0.1))
+    u_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.0, stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -98,7 +55,7 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     # neg
     W_neg = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
     b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.02, stddev=0.1))
+    u_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.0, stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -149,47 +106,47 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     # t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
 
 
-    # # w,u不一样
-    # b = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
-    # t = tf.constant(0)
-    #
-    # def cond_out(t, vu_final):
-    #     return t < BATCH_SIZE
-    #
-    # def body_out(t, vu_final):
-    #     i = tf.constant(0)
-    #
-    #     def conded(i, vus):
-    #         return i < sen_len
-    #
-    #     def body(i, vus):
-    #         def getAttention(flag):
-    #             if flag == 0:
-    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W_neg, axes=1) + b)
-    #                 vu = tf.tensordot(v, u_neg, axes=1)
-    #             elif flag == 1:
-    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
-    #                 vu = tf.tensordot(v, u_med, axes=1)
-    #             else:
-    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W_pos, axes=1) + b)
-    #                 vu = tf.tensordot(v, u_pos, axes=1)
-    #             return vu
-    #
-    #         vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
-    #                                                                           lambda: getAttention(2)))
-    #         vus = tf.concat((vus, [vu]), axis=0)
-    #         i += 1
-    #         return i, vus
-    #
-    #     i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
-    #                             shape_invariants=(i.get_shape(), tf.TensorShape([None])))
-    #     vu_final = tf.concat((vu_final, [vuss]), axis=0)
-    #     t += 1
-    #     return t, vu_final
-    #
-    # zero = tf.Variable(0, dtype=tf.int32)
-    # vu_final = tf.zeros((zero, sen_len))
-    # t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
+    # w,u不一样
+    b = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    t = tf.constant(0)
+
+    def cond_out(t, vu_final):
+        return t < BATCH_SIZE
+
+    def body_out(t, vu_final):
+        i = tf.constant(0)
+
+        def conded(i, vus):
+            return i < sen_len
+
+        def body(i, vus):
+            def getAttention(flag):
+                if flag == 0:
+                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_neg, axes=1) + b)
+                    vu = tf.tensordot(v, u_neg, axes=1)
+                elif flag == 1:
+                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
+                    vu = tf.tensordot(v, u_med, axes=1)
+                else:
+                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W_pos, axes=1) + b)
+                    vu = tf.tensordot(v, u_pos, axes=1)
+                return vu
+
+            vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
+                                                                              lambda: getAttention(2)))
+            vus = tf.concat((vus, [vu]), axis=0)
+            i += 1
+            return i, vus
+
+        i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
+                                shape_invariants=(i.get_shape(), tf.TensorShape([None])))
+        vu_final = tf.concat((vu_final, [vuss]), axis=0)
+        t += 1
+        return t, vu_final
+
+    zero = tf.Variable(0, dtype=tf.int32)
+    vu_final = tf.zeros((zero, sen_len))
+    t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
 
     # # w不一样
     # b = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
@@ -233,51 +190,51 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
     # vu_final = tf.tensordot(vu_final, u, axes=1)
 
 
-    # u,b不一样
-    W = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    t = tf.constant(0)
-
-    def cond_out(t, vu_final):
-        return t < BATCH_SIZE
-
-    def body_out(t, vu_final):
-        i = tf.constant(0)
-
-        def conded(i, vus):
-            return i < sen_len
-
-        def body(i, vus):
-            def getAttention(flag):
-                if flag == 0:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_neg)
-                    vu = tf.tensordot(v, u_neg, axes=1)
-                elif flag == 1:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_med)
-                    vu = tf.tensordot(v, u_med, axes=1)
-                else:
-                    v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_pos)
-                    vu = tf.tensordot(v, u_pos, axes=1)
-                return vu
-
-            vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
-                                                                              lambda: getAttention(2)))
-            vus = tf.concat((vus, [vu]), axis=0)
-            i += 1
-            return i, vus
-
-        i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
-                                shape_invariants=(i.get_shape(), tf.TensorShape([None])))
-        vu_final = tf.concat((vu_final, [vuss]), axis=0)
-        t += 1
-        return t, vu_final
-
-    zero = tf.Variable(0, dtype=tf.int32)
-    vu_final = tf.zeros((zero, sen_len))
-    t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
+    # # u,b不一样
+    # W = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    # t = tf.constant(0)
+    #
+    # def cond_out(t, vu_final):
+    #     return t < BATCH_SIZE
+    #
+    # def body_out(t, vu_final):
+    #     i = tf.constant(0)
+    #
+    #     def conded(i, vus):
+    #         return i < sen_len
+    #
+    #     def body(i, vus):
+    #         def getAttention(flag):
+    #             if flag == 0:
+    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_neg)
+    #                 vu = tf.tensordot(v, u_neg, axes=1)
+    #             elif flag == 1:
+    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_med)
+    #                 vu = tf.tensordot(v, u_med, axes=1)
+    #             else:
+    #                 v = tf.tanh(tf.tensordot(inputs[t, i, :], W, axes=1) + b_pos)
+    #                 vu = tf.tensordot(v, u_pos, axes=1)
+    #             return vu
+    #
+    #         vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
+    #                                                                           lambda: getAttention(2)))
+    #         vus = tf.concat((vus, [vu]), axis=0)
+    #         i += 1
+    #         return i, vus
+    #
+    #     i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
+    #                             shape_invariants=(i.get_shape(), tf.TensorShape([None])))
+    #     vu_final = tf.concat((vu_final, [vuss]), axis=0)
+    #     t += 1
+    #     return t, vu_final
+    #
+    # zero = tf.Variable(0, dtype=tf.int32)
+    # vu_final = tf.zeros((zero, sen_len))
+    # t, vu_final = tf.while_loop(cond_out, body_out, (t, vu_final))
 
     alphas = tf.nn.softmax(vu_final)  # (B,T) shape also
 
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    return output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg
+    return output, alphas

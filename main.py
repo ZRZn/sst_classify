@@ -95,9 +95,9 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
 #Attention Layer
-# attention_output, alphas, W, b_pos, b_med, b_neg, u_pos, u_med, u_neg = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 # attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
@@ -201,7 +201,7 @@ def start_train():
                     if accuracy_test > max_acc:
                         max_acc = accuracy_test
                         res_max = result_tag
-                        print(res_max)
+                        # print(res_max)
                         # w_max = W.eval()
                         # bp_max = b_pos.eval()
                         # bm_max = b_med.eval()
@@ -216,4 +216,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-# max_acc = start_train()
+max_acc = start_train()
