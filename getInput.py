@@ -15,7 +15,7 @@ dictionary = pickle.load(dic_fir)
 dic_fir.close()
 print("dic_len == ", len(dictionary))
 
-sen_fir = open(all_path + "sen_dict.pkl", "rb")
+sen_fir = open(all_path + "default_dic.pkl", "rb")
 sen_dic = pickle.load(sen_fir)
 sen_fir.close()
 
@@ -66,8 +66,10 @@ def read_data(file_path):
             temp_sen = [0, 0, 0]
             if trigram in sen_dic:
                 temp_sen[sen_dic[trigram]] = 1
-                senti_int.append(getSingle(words[i]))
-                senti_int.append(getSingle(words[i + 1]))
+                # senti_int.append(getSingle(words[i]))
+                # senti_int.append(getSingle(words[i + 1]))
+                senti_int.append(temp_sen)
+                senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 i += 3
                 yes_num += 3
@@ -75,7 +77,8 @@ def read_data(file_path):
                 continue
             elif bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
-                senti_int.append(getSingle(words[i]))
+                # senti_int.append(getSingle(words[i]))
+                senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 i += 2
                 yes_num += 2
