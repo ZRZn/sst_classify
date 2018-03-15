@@ -59,10 +59,6 @@ for i in range(15):
     print("第 ", i, " 次， acc = ", acc)
 print("result == ", result)
 
-f = open(all_path + "res_with_tag.pkl", "wb")
+f = open(all_path + "res_att.pkl", "wb")
 pickle.dump(result, f)
 f.close()
-
-f_tag = open(all_path + "att_tag.pkl", "wb")
-pickle.dump(max_tag, f_tag)
-f_tag.close()

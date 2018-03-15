@@ -87,7 +87,7 @@ emd_file.close()
 embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
-# #normal bi_GRU
+#normal bi_GRU
 (f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 gru_out = tf.concat((f_out, b_out), axis=2)
 
@@ -98,12 +98,77 @@ gru_out = tf.concat((f_out, b_out), axis=2)
 # attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
 attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-# attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
+
+hidden_size = input_emd.shape[2].value
+#word-sen
+# Pos
+W_pos = tf.Variable(tf.truncated_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+# b_pos = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.128, stddev=0.1))
+u_pos = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.0, stddev=0.1))
+# # meg
+W_med = tf.Variable(tf.random_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+# b_med = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
+u_med = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
+
+# neg
+W_neg = tf.Variable(tf.truncated_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+# b_neg = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.128, stddev=0.1))
+u_neg = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.0, stddev=0.1))
+# w,u不一样
+b = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
+t_z = tf.constant(0)
+input_s = tf.cast(input_s, tf.bool)
+
+def cond_out(t, vu_final):
+    return t < BATCH_SIZE
+
+
+def body_out(t, vu_final):
+    i = tf.constant(0)
+
+    def conded(i, vus):
+        return i < sen_len_ph
+
+    def body(i, vus):
+        def getAttention(flag):
+            if flag == 0:
+                v = tf.tanh(tf.tensordot(input_emd[t, i, :], W_neg, axes=1) + b)
+                vu = tf.tensordot(v, u_neg, axes=1)
+            elif flag == 1:
+                v = tf.tanh(tf.tensordot(input_emd[t, i, :], W_med, axes=1) + b)
+                vu = tf.tensordot(v, u_med, axes=1)
+            else:
+                v = tf.tanh(tf.tensordot(input_emd[t, i, :], W_pos, axes=1) + b)
+                vu = tf.tensordot(v, u_pos, axes=1)
+            return vu
+
+        vu = tf.cond(input_s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(input_s[t, i, 1], lambda: getAttention(1),
+                                                                          lambda: getAttention(2)))
+        vus = tf.concat((vus, [vu]), axis=0)
+        i += 1
+        return i, vus
+
+    i, vuss = tf.while_loop(conded, body, (i, tf.constant([])),
+                            shape_invariants=(i.get_shape(), tf.TensorShape([None])))
+    vu_final = tf.concat((vu_final, [vuss]), axis=0)
+    t += 1
+    return t, vu_final
+
+
+zero = tf.Variable(0, dtype=tf.int32)
+vu_final = tf.zeros((zero, sen_len_ph))
+t, vu_final = tf.while_loop(cond_out, body_out, (t_z, vu_final))
+
+alphas = tf.nn.softmax(vu_final)  # (B,T) shape also
+output = tf.reduce_sum(input_emd * tf.expand_dims(alphas, -1), 1)
+
+attention_output = tf.concat((attention_output, output), 1)
+
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
-w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=0.1))
+w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value + EMBEDDING_SIZE, Y_Class], stddev=0.1))
 b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
