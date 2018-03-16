@@ -4,15 +4,7 @@
 import pickle
 from path import all_path
 import tensorflow as tf
-f = open(all_path + "wbu.pkl", "rb")
-w_o = pickle.load(f)
-b_o = pickle.load(f)
-u_o = pickle.load(f)
-f.close()
 
-# w_o = tf.Variable(w_o, trainable=True)
-# b_o = tf.Variable(b_o, trainable=True)
-# u_o = tf.Variable(u_o, trainable=True)
 def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
 
     if isinstance(inputs, tuple):

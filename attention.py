@@ -6,12 +6,6 @@ from path import all_path
 import tensorflow as tf
 import math
 
-f = open(all_path + "wbu.pkl", "rb")
-w_o = pickle.load(f)
-b_o = pickle.load(f)
-u_o = pickle.load(f)
-f.close()
-
 
 def attention(inputs, attention_size, time_major=False):
 
