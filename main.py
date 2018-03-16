@@ -17,6 +17,8 @@ from attention import attention
 from attentionOri import attentionOri
 # from sortData import sortData
 # from getInput import read_data, read_y
+import math
+
 
 NUM_EPOCHS = 3
 BATCH_SIZE = 32
@@ -49,6 +51,11 @@ rev_f.close()
 # posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 # negGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 # medGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
+
+def cal_stddev(fan_in, fan_out):
+    fan_in = float(fan_in)
+    fan_out = float(fan_out)
+    return math.sqrt(6.0/(fan_in + fan_out))
 
 def length(sequences):
     used = tf.sign(tf.reduce_max(tf.abs(sequences), reduction_indices=2))
@@ -93,24 +100,24 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 # gru_out = tf.concat((gru_output, gru_output_rev), axis=2)
 
 # #normal bi_GRU
-# (f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
-# gru_out = tf.concat((f_out, b_out), axis=2)
+(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+gru_out = tf.concat((f_out, b_out), axis=2)
 
 #RNN
-gru_out, _ = dynamic_rnn(BasicRNNCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+# gru_out, _ = dynamic_rnn(BasicRNNCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 
 #Attention Layer
-# attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
 
-attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 # attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
-w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=0.1))
-b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
+w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=cal_stddev(gru_out.shape[2].value, Y_Class)))
+b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
 #Loss
