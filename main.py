@@ -17,6 +17,8 @@ from attention import attention
 from attentionOri import attentionOri
 # from sortData import sortData
 # from getInput import read_data, read_y
+import math
+
 
 NUM_EPOCHS = 4
 BATCH_SIZE = 32
@@ -104,6 +106,7 @@ gru_out = tf.concat((f_out, b_out), axis=2)
 
 # attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
+
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
@@ -225,4 +228,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-max_acc = start_train()
+# max_acc = start_train()

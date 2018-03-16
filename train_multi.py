@@ -5,7 +5,7 @@
 import main
 import pickle
 from path import all_path
-import mainMulti
+# import mainMulti
 
 # result = []
 # max_acc = 0
@@ -51,7 +51,7 @@ result = []
 max_acc = 0
 max_tag = None
 for i in range(15):
-    acc, res_tag = mainMulti.start_train()
+    acc, res_tag = main.start_train()
     result.append(acc)
     if acc > max_acc:
         max_acc = acc
