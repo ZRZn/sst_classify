@@ -5,7 +5,7 @@
 import main
 import pickle
 from path import all_path
-
+import mainMulti
 
 # result = []
 # max_acc = 0
@@ -51,7 +51,7 @@ result = []
 max_acc = 0
 max_tag = None
 for i in range(15):
-    acc, res_tag = main.start_train()
+    acc, res_tag = mainMulti.start_train()
     result.append(acc)
     if acc > max_acc:
         max_acc = acc
@@ -59,10 +59,6 @@ for i in range(15):
     print("第 ", i, " 次， acc = ", acc)
 print("result == ", result)
 
-f = open(all_path + "res_with_tag.pkl", "wb")
+f = open(all_path + "res_att.pkl", "wb")
 pickle.dump(result, f)
 f.close()
-
-f_tag = open(all_path + "att_tag.pkl", "wb")
-pickle.dump(max_tag, f_tag)
-f_tag.close()
