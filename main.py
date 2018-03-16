@@ -168,7 +168,7 @@ def start_train():
                                                       keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-                if b % 1 == 0:
+                if epoch > 0:
                     # print("accuracy_train" == accuracy_train / (b + 1))
                     # Testin
                     accuracy_test = 0
