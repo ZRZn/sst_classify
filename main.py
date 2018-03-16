@@ -36,9 +36,13 @@ test_fir = open(all_path + "test_out.pkl", "rb")
 train_X = pickle.load(train_fir)
 train_Y = pickle.load(train_fir)
 train_S = pickle.load(train_fir)
+train_F = pickle.load(train_fir)
+
 test_X = pickle.load(test_fir)
 test_Y = pickle.load(test_fir)
 test_S = pickle.load(test_fir)
+test_F = pickle.load(test_fir)
+
 train_fir.close()
 test_fir.close()
 # rev_f = open(all_path + "rev_dict.pkl", "rb")
@@ -76,6 +80,7 @@ def AttentionLayer(inputs, name):
 input_x = tf.placeholder(tf.int32, [BATCH_SIZE, None])
 input_y = tf.placeholder(tf.int32, [BATCH_SIZE, Y_Class])
 input_s = tf.placeholder(tf.int32, [BATCH_SIZE, None, SEN_CLASS])
+input_f = tf.placeholder(tf.float32, [BATCH_SIZE, None])
 sen_len_ph = tf.placeholder(tf.int32)
 keep_prob_ph = tf.placeholder(tf.float32)
 
@@ -97,14 +102,14 @@ gru_out = tf.concat((f_out, b_out), axis=2)
 #Attention Layer
 # attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-# attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE)
+# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
 w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=0.1))
-b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
+b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
 #Loss
@@ -149,11 +154,13 @@ def start_train():
                 x_train = train_X[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
                 y_train = train_Y[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
                 s_train = train_S[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
+                f_train = train_F[count * BATCH_SIZE: (count + 1) * BATCH_SIZE]
                 sen_len = len(x_train[0])
                 loss_tr, acc, _ = sess.run([loss, accuracy, optimizer],
                                            feed_dict={input_x: x_train,
                                                       input_y: y_train,
                                                       input_s: s_train,
+                                                      input_f: f_train,
                                                       sen_len_ph: sen_len,
                                                       keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
@@ -169,11 +176,13 @@ def start_train():
                         x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         s_test = test_S[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
+                        f_test = test_F[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         test_len = len(x_test[0])
                         loss_test_batch, test_predict, test_label, test_equal, test_acc = sess.run([loss, predict, label, equal, accuracy],
                                                              feed_dict={input_x: x_test,
                                                                         input_y: y_test,
                                                                         input_s: s_test,
+                                                                        input_f: f_test,
                                                                         sen_len_ph: test_len,
                                                                         keep_prob_ph: 1.0})
                         accuracy_test += test_acc

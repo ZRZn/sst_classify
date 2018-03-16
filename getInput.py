@@ -19,6 +19,10 @@ sen_fir = open(all_path + "default_dic.pkl", "rb")
 sen_dic = pickle.load(sen_fir)
 sen_fir.close()
 
+score_fir = open(all_path + "score_dic.pkl", "rb")
+score_dic = pickle.load(score_fir)
+score_fir.close()
+
 pos_num = 0
 neg_num = 0
 med_num = 0
@@ -45,6 +49,7 @@ def read_data(file_path):
     global un_num, yes_num, three_count, two_count
     data = list()
     sen_data = list()
+    score_data = list()
     f = open(file_path, "r")
     for line in f:
         words = word_cut.tokenize(line)
@@ -101,7 +106,8 @@ def read_data(file_path):
             temp_sen = [0, 0, 0]
             if bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
-                senti_int.append(temp_sen)
+                senti_int.append(getSingle(words[len(words) - 2]))
+                # senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 yes_num += 2
             else:
@@ -133,12 +139,62 @@ def read_data(file_path):
                 temp_sen[1] = 1
                 senti_int.append(temp_sen)
         sen_data.append(senti_int)
+
+
+
+        i = 0
+        score_int = []
+        while i < len(words)-2:
+            trigram = words[i] + ' ' + words[i + 1] + ' ' + words[i + 2]
+            bigram = words[i] + ' ' + words[i + 1]
+            if trigram in score_dic:
+                score_int.append(score_dic[words[i]])
+                score_int.append(score_dic[words[i + 1]])
+                score_int.append(score_dic[trigram])
+                i += 3
+                continue
+            elif bigram in score_dic:
+                score_int.append(score_dic[words[i]])
+                score_int.append(score_dic[bigram])
+                i += 2
+                continue
+            elif words[i] in score_dic:
+                score_int.append(score_dic[words[i]])
+                i += 1
+                continue
+            else:
+                score_int.append(0.5)
+                i += 1
+                continue
+        if len(score_int) == len(words) - 2:
+            bigram = words[len(words) - 2] + ' ' + words[len(words) - 1]
+            if bigram in score_dic:
+                score_int.append(score_dic[words[len(words) - 2]])
+                score_int.append(score_dic[bigram])
+            else:
+                if words[len(words) - 2] in score_dic:
+                    score_int.append(score_dic[words[len(words) - 2]])
+                else:
+                    score_int.append(0.5)
+                if words[len(words) - 1] in score_dic:
+                    score_int.append(score_dic[words[len(words) - 1]])
+                else:
+                    score_int.append(0.5)
+        elif len(score_int) == len(words) - 1:
+            if words[len(words) - 1] in score_dic:
+                score_int.append(score_dic[words[len(words) - 1]])
+            else:
+                score_int.append(0.5)
+        score_data.append(score_int)
+
+
     f.close()
-    assert len(data) == len(sen_data)
+
+    assert len(data) == len(sen_data) == len(score_data)
     for i in range(len(data)):
-        if len(data[i]) != len(sen_data[i]):
+        if len(data[i]) != len(sen_data[i]) or len(score_data[i]) != len(sen_data[i]):
             print("出错啦！！！datasize = %d, sen_data = %d", len(data[i]), len(sen_data[i]))
-    return data, sen_data
+    return data, sen_data, score_data
 
 
 def read_y(file_path):
@@ -153,9 +209,10 @@ def read_y(file_path):
     return y
 
 
-train_x, train_s = read_data(origin_path + "train.txt")
-test_x, test_s = read_data(origin_path + "test.txt")
+train_x, train_s, train_f = read_data(origin_path + "train.txt")
+test_x, test_s, test_f = read_data(origin_path + "test.txt")
 
+print(test_f)
 train_y = read_y(origin_path + "train_label.txt")
 test_y = read_y(origin_path + "test_label.txt")
 
@@ -184,10 +241,12 @@ test_fir = open(all_path + "test.pkl", "wb")
 pickle.dump(train_x, train_fir)
 pickle.dump(train_y, train_fir)
 pickle.dump(train_s, train_fir)
+pickle.dump(train_f, train_fir)
 
 pickle.dump(test_x, test_fir)
 pickle.dump(test_y, test_fir)
 pickle.dump(test_s, test_fir)
+pickle.dump(test_f, test_fir)
 
 train_fir.close()
 test_fir.close()
