@@ -162,13 +162,17 @@ t, vu_final = tf.while_loop(cond_out, body_out, (t_z, vu_final))
 alphas = tf.nn.softmax(vu_final)  # (B,T) shape also
 output = tf.reduce_sum(input_emd * tf.expand_dims(alphas, -1), 1)
 
+attention_output = tf.reshape(attention_output, [BATCH_SIZE, 1, HIDDEN_SIZE * 2])
+output = tf.reshape(output, [BATCH_SIZE, 1, EMBEDDING_SIZE])
 attention_output = tf.concat((attention_output, output), 1)
+attention_output = tf.reduce_max(attention_output, 1)
+
 
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
-w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value + EMBEDDING_SIZE, Y_Class], stddev=0.1))
+w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=0.1))
 b_full = tf.Variable(tf.constant(0., shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
