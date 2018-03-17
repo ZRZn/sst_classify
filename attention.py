@@ -22,9 +22,9 @@ def attention(inputs, attention_size, time_major=False):
 
 
     # Trainable parameters
-    W_a = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
+    W_a = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
     b_omega = tf.Variable(tf.zeros([attention_size]))
-    u_omega = tf.Variable(tf.truncated_normal([attention_size], stddev=0.1))
+    u_omega = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
