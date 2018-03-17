@@ -19,12 +19,12 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
     hidden_size = inputs.shape[2].value  # D value - hidden size of the RNN layer
 
 
-    b = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    b = tf.Variable(tf.zeros([attention_size]))
 
     # Pos
-    W_pos = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
-    b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.0, stddev=0.1))
+    W_pos = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    b_pos = tf.Variable(tf.random_normal([attention_size], mean=0.128, stddev=0.1))
+    u_pos = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
 
 
     # #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -45,13 +45,13 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
 
 
     # neg
-    W_neg = tf.Variable(tf.truncated_normal([hidden_size, attention_size], stddev=0.1))
-    b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.0, stddev=0.1))
+    W_neg = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    b_neg = tf.Variable(tf.random_normal([attention_size], mean=0.128, stddev=0.1))
+    u_neg = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
 
 
     # #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
-    # v_neg = tf.tanh(tf.tensordot(inputs, W_neg, axes=1) + b_neg)
+    # v_neg = tf.tanh(tf.tensordot(inputs, W_neg, axes=1) + b)
     # vu_neg = tf.tensordot(v_neg, u_neg, axes=1)  # (B,T) shape
 
 
@@ -77,7 +77,7 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
                     vu1 = tf.tensordot(v1, u_neg, axes=1)
                     v2 = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                     vu2 = tf.tensordot(v2, u_med, axes=1)
-                    vu = s[t, i] * vu2 + (1 - s[t, i]) * vu1
+                    vu = 2 * s[t, i] * vu2 + (1 - 2 * s[t, i]) * vu1
                 elif flag == 1:
                     v = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                     vu = tf.tensordot(v, u_med, axes=1)
@@ -86,7 +86,7 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
                     vu1 = tf.tensordot(v1, u_pos, axes=1)
                     v2 = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                     vu2 = tf.tensordot(v2, u_med, axes=1)
-                    vu = s[t, i] * vu1 + (1 - s[t, i]) * vu2
+                    vu = (2 * s[t, i] - 1) * vu1 + (2 - 2 * s[t, i]) * vu2
                 return vu
 
             vu = tf.cond(tf.less(s[t, i], 0.5), lambda: getAttention(0), lambda: tf.cond(tf.equal(s[t, i], 0.5), lambda: getAttention(1),

@@ -6,6 +6,8 @@ from path import all_path
 import tensorflow as tf
 import math
 
+def calFan(fan_in, fan_out):
+    return math.sqrt(6 / (fan_in + fan_out))
 
 def attention(inputs, attention_size, time_major=False):
 
@@ -20,11 +22,10 @@ def attention(inputs, attention_size, time_major=False):
     hidden_size = inputs.shape[2].value  # D value - hidden size of the RNN layer
 
 
-
     # Trainable parameters
-    W_a = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    W_a = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size), calFan(hidden_size, attention_size)))
     b_omega = tf.Variable(tf.zeros([attention_size]))
-    u_omega = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    u_omega = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
