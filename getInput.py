@@ -32,6 +32,9 @@ yes_num = 0
 in_num = 0
 out_num = 0
 
+bi = 0
+tri = 0
+
 three_count = 0
 two_count = 0
 # print("pos_num == ", pos_num)
@@ -46,7 +49,7 @@ def getSingle(word):
     return temp_sen
 
 def read_data(file_path):
-    global un_num, yes_num, three_count, two_count
+    global un_num, yes_num, three_count, two_count, bi, tri
     data = list()
     sen_data = list()
     score_data = list()
@@ -110,6 +113,7 @@ def read_data(file_path):
                 # senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 yes_num += 2
+                two_count += 1
             else:
                 if words[len(words) - 2] in sen_dic:
                     temp_sen[sen_dic[words[len(words) - 2]]] = 1
@@ -152,11 +156,13 @@ def read_data(file_path):
                 score_int.append(score_dic[words[i + 1]])
                 score_int.append(score_dic[trigram])
                 i += 3
+                tri += 1
                 continue
             elif bigram in score_dic:
                 score_int.append(score_dic[words[i]])
                 score_int.append(score_dic[bigram])
                 i += 2
+                bi += 1
                 continue
             elif words[i] in score_dic:
                 score_int.append(score_dic[words[i]])
@@ -171,6 +177,7 @@ def read_data(file_path):
             if bigram in score_dic:
                 score_int.append(score_dic[words[len(words) - 2]])
                 score_int.append(score_dic[bigram])
+                bi += 1
             else:
                 if words[len(words) - 2] in score_dic:
                     score_int.append(score_dic[words[len(words) - 2]])
@@ -187,7 +194,7 @@ def read_data(file_path):
                 score_int.append(0.5)
         score_data.append(score_int)
 
-
+        print(words, ' | ', score_int)
     f.close()
 
     assert len(data) == len(sen_data) == len(score_data)
@@ -210,9 +217,9 @@ def read_y(file_path):
 
 
 train_x, train_s, train_f = read_data(origin_path + "train.txt")
-test_x, test_s, test_f = read_data(origin_path + "test.txt")
+# test_x, test_s, test_f = read_data(origin_path + "test.txt")
 
-print(test_f)
+# print(test_f)
 train_y = read_y(origin_path + "train_label.txt")
 test_y = read_y(origin_path + "test_label.txt")
 
@@ -234,19 +241,21 @@ print("neg == ", neg)
 print("med == ", med)
 print("three_count == ", three_count)
 print("two_count == ", two_count)
+print("bi == ", bi)
+print("tri == ", tri)
 
-train_fir = open(all_path + "train.pkl", "wb")
-test_fir = open(all_path + "test.pkl", "wb")
-
-pickle.dump(train_x, train_fir)
-pickle.dump(train_y, train_fir)
-pickle.dump(train_s, train_fir)
-pickle.dump(train_f, train_fir)
-
-pickle.dump(test_x, test_fir)
-pickle.dump(test_y, test_fir)
-pickle.dump(test_s, test_fir)
-pickle.dump(test_f, test_fir)
-
-train_fir.close()
-test_fir.close()
+# train_fir = open(all_path + "train.pkl", "wb")
+# test_fir = open(all_path + "test.pkl", "wb")
+#
+# pickle.dump(train_x, train_fir)
+# pickle.dump(train_y, train_fir)
+# pickle.dump(train_s, train_fir)
+# pickle.dump(train_f, train_fir)
+#
+# pickle.dump(test_x, test_fir)
+# pickle.dump(test_y, test_fir)
+# pickle.dump(test_s, test_fir)
+# pickle.dump(test_f, test_fir)
+#
+# train_fir.close()
+# test_fir.close()
