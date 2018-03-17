@@ -4,8 +4,10 @@
 import pickle
 from path import all_path
 import tensorflow as tf
+import math
 
-
+def calFan(fan_in, fan_out):
+    return math.sqrt(6 / (fan_in + fan_out))
 def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
 
     if isinstance(inputs, tuple):
@@ -22,36 +24,43 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
     b = tf.Variable(tf.zeros([attention_size]))
 
     # Pos
-    W_pos = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_pos = tf.Variable(tf.random_normal([attention_size], mean=0.128, stddev=0.1))
-    u_pos = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
+    W_pos = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size),
+                                          calFan(hidden_size, attention_size)))
+    b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
+    u_pos = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
-
-    # #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
-    # v_pos = tf.tanh(tf.tensordot(inputs, W_pos, axes=1) + b)
+    # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
+    #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
+    # v_pos = tf.tanh(tf.tensordot(inputs, W_pos, axes=1) + b_pos)
+    # # For each of the timestamps its vector of size A from `v` is reduced with `u` vector
     # vu_pos = tf.tensordot(v_pos, u_pos, axes=1)  # (B,T) shape
 
 
 
     # # meg
-    W_med = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    W_med = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size),
+                                          calFan(hidden_size, attention_size)))
     b_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
-    u_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    u_med = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
-    # #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
-    # v_med = tf.tanh(tf.tensordot(inputs, W_med, axes=1) + b)
+    # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
+    #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
+    # v_med = tf.tanh(tf.tensordot(inputs, W_med, axes=1) + b_med)
+    # # For each of the timestamps its vector of size A from `v` is reduced with `u` vector
     # vu_med = tf.tensordot(v_med, u_med, axes=1)  # (B,T) shape
 
 
 
     # neg
-    W_neg = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
-    b_neg = tf.Variable(tf.random_normal([attention_size], mean=0.128, stddev=0.1))
-    u_neg = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
+    W_neg = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size),
+                                          calFan(hidden_size, attention_size)))
+    b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
+    u_neg = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
-
-    # #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
-    # v_neg = tf.tanh(tf.tensordot(inputs, W_neg, axes=1) + b)
+    # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
+    #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
+    # v_neg = tf.tanh(tf.tensordot(inputs, W_neg, axes=1) + b_neg)
+    # # For each of the timestamps its vector of size A from `v` is reduced with `u` vector
     # vu_neg = tf.tensordot(v_neg, u_neg, axes=1)  # (B,T) shape
 
 

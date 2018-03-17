@@ -4,6 +4,10 @@
 import pickle
 from path import all_path
 import tensorflow as tf
+import math
+
+def calFan(fan_in, fan_out):
+    return math.sqrt(6 / (fan_in + fan_out))
 
 def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
 
@@ -19,9 +23,9 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
 
     # Pos
-    W_pos = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    W_pos = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size), calFan(hidden_size, attention_size)))
     b_pos = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_pos = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
+    u_pos = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -32,9 +36,9 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
 
     # # meg
-    W_med = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    W_med = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size), calFan(hidden_size, attention_size)))
     b_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
-    u_med = tf.Variable(tf.random_normal([attention_size], stddev=0.1))
+    u_med = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;
     #  the shape of `v` is (B,T,D)*(D,A)=(B,T,A), where A=attention_size
@@ -45,9 +49,9 @@ def attentionMulti(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fa
 
 
     # neg
-    W_neg = tf.Variable(tf.random_normal([hidden_size, attention_size], stddev=0.1))
+    W_neg = tf.Variable(tf.random_uniform([hidden_size, attention_size], -calFan(hidden_size, attention_size), calFan(hidden_size, attention_size)))
     b_neg = tf.Variable(tf.truncated_normal([attention_size], mean=0.128, stddev=0.1))
-    u_neg = tf.Variable(tf.random_normal([attention_size], mean=0.0, stddev=0.1))
+    u_neg = tf.Variable(tf.random_uniform([attention_size], -calFan(attention_size, 1), calFan(attention_size, 1)))
 
 
     # Applying fully connected layer with non-linear activation to each of the B*T timestamps;

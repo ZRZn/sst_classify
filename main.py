@@ -13,14 +13,14 @@ from tensorflow.python.ops.rnn import dynamic_rnn
 from tensorflow.contrib.layers import fully_connected
 import numpy as np
 from attentionMulti import attentionMulti
-from attention import attention
+from attention import attention, calFan
 from attentionOri import attentionOri
 # from sortData import sortData
 # from getInput import read_data, read_y
 import math
 
 
-NUM_EPOCHS = 4
+NUM_EPOCHS = 3
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -102,16 +102,16 @@ gru_out = tf.concat((f_out, b_out), axis=2)
 # gru_out, _ = dynamic_rnn(BasicRNNCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 
 #Attention Layer
-# attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
 # attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
+# attention_output, alphas = attentionOri(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
 
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
-w_full = tf.Variable(tf.truncated_normal([gru_out.shape[2].value, Y_Class], stddev=0.1))
+w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
 b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
@@ -228,4 +228,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-max_acc = start_train()
+# max_acc = start_train()
