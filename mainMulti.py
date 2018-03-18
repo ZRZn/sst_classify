@@ -13,7 +13,7 @@ from tensorflow.python.ops.rnn import dynamic_rnn
 from tensorflow.contrib.layers import fully_connected
 import numpy as np
 from attentionMulti import attentionMulti
-from attention import attention
+from attention import attention, calFan
 from attentionOri import attentionOri
 # from sortData import sortData
 # from getInput import read_data, read_y
@@ -102,18 +102,18 @@ attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
 hidden_size = input_emd.shape[2].value
 #word-sen
 # Pos
-W_pos = tf.Variable(tf.truncated_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+W_pos = tf.Variable(tf.random_uniform([hidden_size, ATTENTION_SIZE], -calFan(hidden_size, ATTENTION_SIZE), calFan(hidden_size, ATTENTION_SIZE)))
 # b_pos = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.128, stddev=0.1))
-u_pos = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.0, stddev=0.1))
+u_pos = tf.Variable(tf.random_uniform([ATTENTION_SIZE], -calFan(ATTENTION_SIZE, 1), calFan(ATTENTION_SIZE, 1)))
 # # meg
-W_med = tf.Variable(tf.random_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+W_med = tf.Variable(tf.random_uniform([hidden_size, ATTENTION_SIZE], -calFan(hidden_size, ATTENTION_SIZE), calFan(hidden_size, ATTENTION_SIZE)))
 # b_med = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
-u_med = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
+u_med = tf.Variable(tf.random_uniform([ATTENTION_SIZE], -calFan(ATTENTION_SIZE, 1), calFan(ATTENTION_SIZE, 1)))
 
 # neg
-W_neg = tf.Variable(tf.truncated_normal([hidden_size, ATTENTION_SIZE], stddev=0.1))
+W_neg = tf.Variable(tf.random_uniform([hidden_size, ATTENTION_SIZE], -calFan(hidden_size, ATTENTION_SIZE), calFan(hidden_size, ATTENTION_SIZE)))
 # b_neg = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.128, stddev=0.1))
-u_neg = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.0, stddev=0.1))
+u_neg = tf.Variable(tf.random_uniform([ATTENTION_SIZE], -calFan(ATTENTION_SIZE, 1), calFan(ATTENTION_SIZE, 1)))
 # w,u不一样
 b = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
 t_z = tf.constant(0)

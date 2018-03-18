@@ -8,7 +8,7 @@ import math
 
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
-def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
+def attentionOri(emb_input, inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
 
     if isinstance(inputs, tuple):
         # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
@@ -132,12 +132,12 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
         def body(i, vus):
             def getAttention(flag):
                 if flag == 0:
-                    vu = tf.tanh((1 - 2 * s[t, i]) * tf.tensordot(inputs[t, i, :], W_neg, axes=1) +
+                    vu = tf.tanh((1 - 2 * s[t, i]) * tf.tensordot(emb_input[t, i, :], W_neg, axes=1) +
                                  2 * s[t, i] * tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 elif flag == 1:
                     vu = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 else:
-                    vu = tf.tanh((2 * s[t, i] - 1) * tf.tensordot(inputs[t, i, :], W_pos, axes=1) +
+                    vu = tf.tanh((2 * s[t, i] - 1) * tf.tensordot(emb_input[t, i, :], W_pos, axes=1) +
                                  (2 - 2 * s[t, i]) * tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 return vu
 
