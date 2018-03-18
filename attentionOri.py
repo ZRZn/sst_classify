@@ -132,13 +132,13 @@ def attentionOri(emb_input, inputs, attention_size, s, BATCH_SIZE, sen_len, time
         def body(i, vus):
             def getAttention(flag):
                 if flag == 0:
-                    vu = tf.tanh((1 - 2 * s[t, i]) * tf.tensordot(emb_input[t, i, :], W_neg, axes=1) +
-                                 2 * s[t, i] * tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
+                    vu = tf.tanh((1 - 4 * tf.square(s[t, i])) * tf.tensordot(emb_input[t, i, :], W_neg, axes=1) +
+                                 tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 elif flag == 1:
                     vu = tf.tanh(tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 else:
-                    vu = tf.tanh((2 * s[t, i] - 1) * tf.tensordot(emb_input[t, i, :], W_pos, axes=1) +
-                                 (2 - 2 * s[t, i]) * tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
+                    vu = tf.tanh((1 - 4 * tf.square(s[t, i] - 1)) * tf.tensordot(emb_input[t, i, :], W_pos, axes=1) +
+                                 tf.tensordot(inputs[t, i, :], W_med, axes=1) + b)
                 return vu
 
             vu = tf.cond(tf.less(s[t, i], 0.5), lambda: getAttention(0),
