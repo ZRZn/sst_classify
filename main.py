@@ -13,12 +13,14 @@ from tensorflow.python.ops.rnn import dynamic_rnn
 from tensorflow.contrib.layers import fully_connected
 import numpy as np
 from attentionMulti import attentionMulti
-from attention import attention, calFan
+from attention import attention
 from attentionOri import attentionOri
 # from sortData import sortData
 # from getInput import read_data, read_y
 import math
 
+def calFan(fan_in, fan_out):
+    return math.sqrt(6 / (fan_in + fan_out))
 
 NUM_EPOCHS = 4
 BATCH_SIZE = 32
@@ -112,6 +114,8 @@ drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
 
 #FullConnect Layer
 w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
+
+print(" == ", -calFan(gru_out.shape[2].value, Y_Class))
 b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
@@ -228,4 +232,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-# max_acc = start_train()
+max_acc = start_train()
