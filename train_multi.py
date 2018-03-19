@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-import main
+# import main
 import pickle
 from path import all_path
+import mainOne
 # import mainMulti
 
 # result = []
@@ -50,8 +51,8 @@ from path import all_path
 result = []
 max_acc = 0
 max_tag = None
-for i in range(15):
-    acc, res_tag = main.start_train()
+for i in range(10):
+    acc, res_tag = mainOne.start_train()
     result.append(acc)
     if acc > max_acc:
         max_acc = acc

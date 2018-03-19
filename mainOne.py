@@ -44,9 +44,16 @@ test_F = pickle.load(test_fir)
 train_fir.close()
 test_fir.close()
 
+state = tf.zeros([1, HIDDEN_SIZE])
+state_rev = tf.zeros([1, HIDDEN_SIZE])
 posGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 negGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 medGRU = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
+
+posGRU_rev = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
+negGRU_rev = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
+medGRU_rev = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
+
 
 def length(sequences):
     used = tf.sign(tf.reduce_max(tf.abs(sequences), reduction_indices=2))
@@ -69,6 +76,7 @@ def AttentionLayer(inputs, name):
 
 
 def diffGRU(inputs, pos_neg, B, T, name='RNN'):
+    global state
     # inputs, shape = (B, T, E)
     # pos_neg, shape = (B, T, 3)
     t = tf.constant(0)
@@ -82,10 +90,11 @@ def diffGRU(inputs, pos_neg, B, T, name='RNN'):
 
             tf.get_variable_scope().reuse_variables()
 
-            def cond2(j, h_state, time_outs):
+            def cond2(j, time_outs):
                 return j < T
 
-            def body2(j, h_state, time_outs):
+            def body2(j, time_outs):
+                global state
                 def MultiGRU(temp_value, temp_state, temp_np):
                     tf.get_variable_scope().reuse_variables()
                     if temp_np == 2:
@@ -97,24 +106,24 @@ def diffGRU(inputs, pos_neg, B, T, name='RNN'):
 
                 # temp_input = tf.reshape(inputs[i][j], [1, EMBEDDING_SIZE])
                 temp_input =inputs[i][j]
-                temp_out, h_state = tf.cond(flag[i][j][0], lambda: MultiGRU(temp_input, h_state, 0),
+                temp_out, state = tf.cond(flag[i][j][0], lambda: MultiGRU(temp_input, state, 0),
                                             lambda: tf.cond(flag[i][j][1],
                                                             lambda: MultiGRU(
                                                                 temp_input,
-                                                                h_state, 1),
+                                                                state, 1),
                                                             lambda: MultiGRU(
                                                                 temp_input,
-                                                                h_state, 2)))
+                                                                state, 2)))
 
                 time_outs = tf.concat((time_outs, temp_out), axis=0)
                 j += 1
-                return j, h_state, time_outs
+                return j, time_outs
 
             j = tf.constant(0)
-            state = posGRU.zero_state(1, dtype=tf.float32)
+            # state = posGRU.zero_state(1, dtype=tf.float32)
             zero_time = tf.Variable(0, dtype=tf.int32)
             time_out_zero = tf.zeros((zero_time, HIDDEN_SIZE))
-            _, _, time_outs = tf.while_loop(cond2, body2, (j, state, time_out_zero))
+            _, time_outs = tf.while_loop(cond2, body2, (j, time_out_zero))
             grus = tf.concat((grus, [time_outs]), axis=0)
             i += 1
             return i, grus
@@ -124,6 +133,7 @@ def diffGRU(inputs, pos_neg, B, T, name='RNN'):
         return grus
 
 def diffGRURev(inputs, pos_neg, B, T, name='RNN'):
+    global state_rev
     # inputs, shape = (B, T, E)
     # pos_neg, shape = (B, T, 3)
     t = tf.constant(0)
@@ -137,39 +147,40 @@ def diffGRURev(inputs, pos_neg, B, T, name='RNN'):
 
             tf.get_variable_scope().reuse_variables()
 
-            def cond2(j, h_state, time_outs):
+            def cond2(j, time_outs):
                 return j < T
 
-            def body2(j, h_state, time_outs):
+            def body2(j, time_outs):
+                global state_rev
                 def MultiGRU(temp_value, temp_state, temp_np):
                     tf.get_variable_scope().reuse_variables()
                     if temp_np == 2:
-                        return posGRU(temp_value, temp_state)
+                        return posGRU_rev(temp_value, temp_state)
                     elif temp_np == 1:
-                        return medGRU(temp_value, temp_state)
+                        return medGRU_rev(temp_value, temp_state)
                     else:
-                        return negGRU(temp_value, temp_state)
+                        return negGRU_rev(temp_value, temp_state)
 
                 # temp_input = tf.reshape(inputs[i][j], [1, EMBEDDING_SIZE])
                 temp_input = inputs[i][sen_len_ph - j - 1]
-                temp_out, h_state = tf.cond(flag[i][sen_len_ph - j - 1][0], lambda: MultiGRU(temp_input, h_state, 0),
+                temp_out, state_rev = tf.cond(flag[i][sen_len_ph - j - 1][0], lambda: MultiGRU(temp_input, state_rev, 0),
                                             lambda: tf.cond(flag[i][sen_len_ph - j - 1][1],
                                                             lambda: MultiGRU(
                                                                 temp_input,
-                                                                h_state, 1),
+                                                                state_rev, 1),
                                                             lambda: MultiGRU(
                                                                 temp_input,
-                                                                h_state, 2)))
+                                                                state_rev, 2)))
 
                 time_outs = tf.concat((temp_out, time_outs), axis=0)
                 j += 1
-                return j, h_state, time_outs
+                return j, time_outs
 
             j = tf.constant(0)
-            state = posGRU.zero_state(1, dtype=tf.float32)
+            # state = posGRU.zero_state(1, dtype=tf.float32)
             zero_time = tf.Variable(0, dtype=tf.int32)
             time_out_zero = tf.zeros((zero_time, HIDDEN_SIZE))
-            _, _, time_outs = tf.while_loop(cond2, body2, (j, state, time_out_zero))
+            _, time_outs = tf.while_loop(cond2, body2, (j, time_out_zero))
             grus = tf.concat((grus, [time_outs]), axis=0)
             i += 1
             return i, grus
@@ -201,10 +212,10 @@ input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
 # DIFF-GRU Layer
 input_emd = tf.reshape(input_emd, (BATCH_SIZE, sen_len_ph, -1, EMBEDDING_SIZE))
-gru_output = diffGRU(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN')
-gru_output_rev = diffGRURev(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN_REV')
-gru_out = tf.concat((gru_output, gru_output_rev), axis=2)
-# print(gru_out.shape[2].value)
+gru_out_f = diffGRU(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN')
+gru_out_b = diffGRURev(input_emd, input_s, BATCH_SIZE, sen_len_ph, 'RNN_REV')
+gru_out = tf.concat((gru_out_f, gru_out_b), axis=2)
+print(gru_out.shape[2].value)
 
 
 #RNN
@@ -338,4 +349,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-max_acc = start_train()
+# max_acc = start_train()
