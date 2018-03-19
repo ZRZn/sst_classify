@@ -115,7 +115,7 @@ W_neg = tf.Variable(tf.random_uniform([hidden_size, ATTENTION_SIZE], -calFan(hid
 # b_neg = tf.Variable(tf.truncated_normal([ATTENTION_SIZE], mean=0.128, stddev=0.1))
 u_neg = tf.Variable(tf.random_uniform([ATTENTION_SIZE], -calFan(ATTENTION_SIZE, 1), calFan(ATTENTION_SIZE, 1)))
 # w,u不一样
-b = tf.Variable(tf.random_normal([ATTENTION_SIZE], stddev=0.1))
+b = tf.Variable(tf.zeros([ATTENTION_SIZE]))
 t_z = tf.constant(0)
 input_s = tf.cast(input_s, tf.bool)
 
