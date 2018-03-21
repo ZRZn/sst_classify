@@ -217,7 +217,7 @@ def read_y(file_path):
 
 
 train_x, train_s, train_f = read_data(origin_path + "train.txt")
-# test_x, test_s, test_f = read_data(origin_path + "test.txt")
+test_x, test_s, test_f = read_data(origin_path + "test.txt")
 
 # print(test_f)
 train_y = read_y(origin_path + "train_label.txt")
@@ -244,18 +244,18 @@ print("two_count == ", two_count)
 print("bi == ", bi)
 print("tri == ", tri)
 
-# train_fir = open(all_path + "train.pkl", "wb")
-# test_fir = open(all_path + "test.pkl", "wb")
-#
-# pickle.dump(train_x, train_fir)
-# pickle.dump(train_y, train_fir)
-# pickle.dump(train_s, train_fir)
-# pickle.dump(train_f, train_fir)
-#
-# pickle.dump(test_x, test_fir)
-# pickle.dump(test_y, test_fir)
-# pickle.dump(test_s, test_fir)
-# pickle.dump(test_f, test_fir)
-#
-# train_fir.close()
-# test_fir.close()
+train_fir = open(all_path + "train.pkl", "wb")
+test_fir = open(all_path + "test.pkl", "wb")
+
+pickle.dump(train_x, train_fir)
+pickle.dump(train_y, train_fir)
+pickle.dump(train_s, train_fir)
+pickle.dump(train_f, train_fir)
+
+pickle.dump(test_x, test_fir)
+pickle.dump(test_y, test_fir)
+pickle.dump(test_s, test_fir)
+pickle.dump(test_f, test_fir)
+
+train_fir.close()
+test_fir.close()
