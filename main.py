@@ -97,17 +97,19 @@ embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
 # #normal bi_GRU
-(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
-gru_out = tf.concat((f_out, b_out), axis=2)
+# (f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+# gru_out = tf.concat((f_out, b_out), axis=2)
 
 #RNN
-# gru_out, _ = dynamic_rnn(BasicRNNCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+gru_out, final_out = dynamic_rnn(GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 
+# attention_output = final_out
 #Attention Layer
 # attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
-# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-attention_output, alphas = attentionOri(input_emd, gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
+
+attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+# attention_output, alphas = attentionOri(input_emd, gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
 
 #Dropout
 drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
@@ -231,4 +233,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-# max_acc = start_train()
+max_acc = start_train()

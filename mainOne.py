@@ -55,6 +55,7 @@ negGRU_rev = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 medGRU_rev = GRUCell(HIDDEN_SIZE, reuse=tf.AUTO_REUSE)
 
 
+
 def length(sequences):
     used = tf.sign(tf.reduce_max(tf.abs(sequences), reduction_indices=2))
     seq_len = tf.reduce_sum(used, reduction_indices=1)
@@ -88,7 +89,7 @@ def diffGRU(inputs, pos_neg, B, T, name='RNN'):
 
         def body1(i, grus):
 
-            tf.get_variable_scope().reuse_variables()
+            # tf.get_variable_scope().reuse_variables()
 
             def cond2(j, time_outs):
                 return j < T
@@ -145,7 +146,7 @@ def diffGRURev(inputs, pos_neg, B, T, name='RNN'):
 
         def body1(i, grus):
 
-            tf.get_variable_scope().reuse_variables()
+            # tf.get_variable_scope().reuse_variables()
 
             def cond2(j, time_outs):
                 return j < T
@@ -349,4 +350,4 @@ def start_train():
         print("max_accuracy == ", max_acc)
         return max_acc, res_max
 
-# max_acc = start_train()
+max_acc = start_train()
