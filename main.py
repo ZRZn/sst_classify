@@ -15,6 +15,7 @@ import numpy as np
 from attentionMulti import attentionMulti
 from attention import attention
 from attentionOri import attentionOri
+from attentionCopy import attentionCopy
 # from sortData import sortData
 # from getInput import read_data, read_y
 import math
@@ -22,7 +23,7 @@ import math
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
 
-NUM_EPOCHS = 4
+NUM_EPOCHS = 5
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -97,29 +98,31 @@ embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
 # #normal bi_GRU
-# (f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
-# gru_out = tf.concat((f_out, b_out), axis=2)
+(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+gru_out = tf.concat((f_out, b_out), axis=2)
 
 #RNN
-gru_out, final_out = dynamic_rnn(GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+# gru_out, final_out = dynamic_rnn(GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
 
 # attention_output = final_out
 #Attention Layer
 # attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
 
 
-attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-# attention_output, alphas = attentionOri(input_emd, gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
+# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
+attention_output, b_pos, b_o, b_neg = attentionOri(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+# attention_output, b1, b2, b3, b4, b5 = attentionCopy(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
 
-#Dropout
-drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
+# #Dropout
+# drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
+#
+# #FullConnect Layer
+# w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
+#
+# b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
+# full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
-#FullConnect Layer
-w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
-
-b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
-full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
-
+full_out = attention_output
 #Loss
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
@@ -139,6 +142,9 @@ def start_train():
         # up_max = None
         # um_max = None
         # un_max = None
+        max_b = []
+        max_b_pos = []
+        max_b_neg = []
         res_max = None
         sess.run(tf.global_variables_initializer())
         print("Start learning...")
@@ -186,7 +192,7 @@ def start_train():
                         s_test = test_S[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         f_test = test_F[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         test_len = len(x_test[0])
-                        loss_test_batch, test_predict, test_label, test_equal, test_acc = sess.run([loss, predict, label, equal, accuracy],
+                        loss_test_batch, test_acc = sess.run([loss, accuracy],
                                                              feed_dict={input_x: x_test,
                                                                         input_y: y_test,
                                                                         input_s: s_test,
@@ -197,10 +203,10 @@ def start_train():
                         loss_test += loss_test_batch
 
                         add_value = []
-                        assert len(test_predict) == len(test_label) == len(test_equal)
-                        for i in range(len(test_equal)):
-                            add_value.append((test_equal[i], test_predict[i], test_label[i]))
-                        result_tag.extend(add_value)
+                        # assert len(test_predict) == len(test_label) == len(test_equal)
+                        # for i in range(len(test_equal)):
+                        #     add_value.append((test_equal[i], test_predict[i], test_label[i]))
+                        # result_tag.extend(add_value)
                         #out
                         # out_s = s_test[14]
                         # for e in range(len(out_s)):
@@ -226,6 +232,11 @@ def start_train():
                         # up_max = u_pos.eval()
                         # um_max = u_med.eval()
                         # un_max = u_neg.eval()
+                        # print("b1: ", b1.eval())
+                        # print("b2: ", b2.eval())
+                        # print("b3: ", b3.eval())
+                        # print("b4: ", b4.eval())
+                        # print("b5: ", b5.eval())
                     print("accuracy_test == ", accuracy_test)
                     print("epoch = ", epoch, "max == ", max_acc)
 

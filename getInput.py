@@ -74,10 +74,10 @@ def read_data(file_path):
             temp_sen = [0, 0, 0]
             if trigram in sen_dic:
                 temp_sen[sen_dic[trigram]] = 1
-                senti_int.append(getSingle(words[i]))
-                senti_int.append(getSingle(words[i + 1]))
-                # senti_int.append(temp_sen)
-                # senti_int.append(temp_sen)
+                # senti_int.append(getSingle(words[i]))
+                # senti_int.append(getSingle(words[i + 1]))
+                senti_int.append(temp_sen)
+                senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 i += 3
                 yes_num += 3
@@ -85,8 +85,8 @@ def read_data(file_path):
                 continue
             elif bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
-                senti_int.append(getSingle(words[i]))
-                # senti_int.append(temp_sen)
+                # senti_int.append(getSingle(words[i]))
+                senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 i += 2
                 yes_num += 2
@@ -109,8 +109,8 @@ def read_data(file_path):
             temp_sen = [0, 0, 0]
             if bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
-                senti_int.append(getSingle(words[len(words) - 2]))
-                # senti_int.append(temp_sen)
+                # senti_int.append(getSingle(words[len(words) - 2]))
+                senti_int.append(temp_sen)
                 senti_int.append(temp_sen)
                 yes_num += 2
                 two_count += 1

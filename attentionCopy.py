@@ -9,7 +9,7 @@ Y_CLASS = 5
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
 
-def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
+def attentionCopy(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=False):
 
     if isinstance(inputs, tuple):
         # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
@@ -39,17 +39,22 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
     # output = inputs * tf.expand_dims(alphas, -1)
 
     # # w不一样
-    b = tf.Variable(tf.zeros([Y_CLASS]))
-    b_pos = tf.Variable(tf.zeros([Y_CLASS]))
-    b_neg = tf.Variable(tf.zeros([Y_CLASS]))
-    wf = tf.Variable(tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
-    wf_pos = tf.Variable(
+    b1 = tf.Variable(tf.zeros([Y_CLASS]))
+    b2 = tf.Variable(tf.zeros([Y_CLASS]))
+    b3 = tf.Variable(tf.zeros([Y_CLASS]))
+    b4 = tf.Variable(tf.zeros([Y_CLASS]))
+    b5 = tf.Variable(tf.zeros([Y_CLASS]))
+    wf1 = tf.Variable(tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
+    wf2 = tf.Variable(
         tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
-    wf_neg = tf.Variable(
+    wf3 = tf.Variable(
+        tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
+    wf4 = tf.Variable(
+        tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
+    wf5 = tf.Variable(
         tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
 
     t = tf.constant(0)
-    s = tf.cast(s, tf.bool)
     def cond_out(t, vu_final):
         return t < BATCH_SIZE
 
@@ -62,15 +67,21 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
         def body(i, vus):
             def getAttention(flag):
                 if flag == 0:
-                    v = tf.tensordot(inputs[t, i, :], wf_neg, axes=1) + b_neg
+                    v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b1
                 elif flag == 1:
-                    v = tf.tensordot(inputs[t, i, :], wf, axes=1) + b
+                    v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b2
+                elif flag == 2:
+                    v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b3
+                elif flag == 3:
+                    v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b4
                 else:
-                    v = tf.tensordot(inputs[t, i, :], wf_pos, axes=1) + b_pos
+                    v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b5
                 return v
 
-            vu = tf.cond(s[t, i, 0], lambda: getAttention(0), lambda: tf.cond(s[t, i, 1], lambda: getAttention(1),
-                                                                              lambda: getAttention(2)))
+            vu = tf.cond(tf.less(s[t, i], 0.2), lambda: getAttention(0), lambda: tf.cond(tf.less(s[t, i], 0.4), lambda: getAttention(1),
+                                                lambda: tf.cond(tf.less_equal(s[t, i], 0.6), lambda: getAttention(2),
+                                                lambda:  tf.cond(tf.less_equal(s[t, i], 0.8), lambda: getAttention(3),
+                                                                 lambda: getAttention(4)))))
             vus = tf.concat((vus, [vu]), axis=0)
             i += 1
             return i, vus
@@ -91,5 +102,5 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
     # output = tf.reduce_sum(vu_final, 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    return output, b_pos, b, b_neg
+    return output, b1, b2, b3, b4, b5
 
