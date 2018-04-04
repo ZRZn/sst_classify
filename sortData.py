@@ -23,12 +23,13 @@ assert len(train_x) == len(train_y) == len(train_s) == len(train_f)
 
 assert len(test_x) == len(test_y) == len(test_s) == len(test_f)
 
-
+count = 0
 
 # for i in range(len(train_x)):
 #     print(train_x[i])
 
 def sortData(x, y, s, f, BATCH_SIZE=32):
+    global count
     for i in range(len(x)):
         if len(x[i]) != len(s[i]):
             print("出错了！！！")
@@ -49,6 +50,8 @@ def sortData(x, y, s, f, BATCH_SIZE=32):
     num = len(x) // BATCH_SIZE
     for i in range(num):
         max = len(x[(i + 1) * BATCH_SIZE - 1])
+        if max < 5:
+            max = 5
         for j in range(i * BATCH_SIZE, (i + 1) * BATCH_SIZE):
             if max == len(x[j]):
                 continue
@@ -56,6 +59,7 @@ def sortData(x, y, s, f, BATCH_SIZE=32):
                 x[j].append(0)
                 res_s[j].append(temp_sen)
                 res_f[j].append(0.5)
+                count += 1
     max_last = len(x[len(x) - 1])
     last = len(x) % BATCH_SIZE
     for i in range(len(x) - last, len(x)):
@@ -63,13 +67,14 @@ def sortData(x, y, s, f, BATCH_SIZE=32):
             x[i].append(0)
             res_s[i].append(temp_sen)
             res_f[i].append(0.5)
+            count += 1
     return x, res_y, res_s, res_f
 
 train_x, train_y, train_s, train_f = sortData(train_x, train_y, train_s, train_f)
 
 test_x, test_y, test_s, test_f = sortData(test_x, test_y, test_s, test_f)
 
-
+print("count == ", count)
 train_fir = open(all_path + "train_out.pkl", "wb")
 test_fir = open(all_path + "test_out.pkl", "wb")
 
@@ -83,7 +88,7 @@ pickle.dump(test_y, test_fir)
 pickle.dump(test_s, test_fir)
 pickle.dump(test_f, test_fir)
 
-print(test_f)
+print([len(x) for x in train_x])
 
 train_fir.close()
 test_fir.close()

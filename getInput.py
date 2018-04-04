@@ -31,7 +31,7 @@ un_num = 0
 yes_num = 0
 in_num = 0
 out_num = 0
-
+rev_num = 0
 bi = 0
 tri = 0
 
@@ -49,7 +49,7 @@ def getSingle(word):
     return temp_sen
 
 def read_data(file_path):
-    global un_num, yes_num, three_count, two_count, bi, tri
+    global un_num, yes_num, three_count, two_count, bi, tri, rev_num
     data = list()
     sen_data = list()
     score_data = list()
@@ -72,28 +72,110 @@ def read_data(file_path):
             trigram = words[i] + ' ' + words[i + 1] + ' ' + words[i + 2]
             bigram = words[i] + ' ' + words[i + 1]
             temp_sen = [0, 0, 0]
+            middle = [0, 1, 0]
             if trigram in sen_dic:
-                temp_sen[sen_dic[trigram]] = 1
+                if i >= 2:
+                    if words[i - 2] == "not" or words[i - 2] == "no" or words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[trigram] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + trigram)
+                        elif sen_dic[trigram] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + trigram)
+                        else:
+                            temp_sen[sen_dic[trigram]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[trigram]] = 1
+                elif i == 1:
+                    if words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[trigram] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 1] + " " + trigram)
+                        elif sen_dic[trigram] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 1] + " " + trigram)
+                        else:
+                            temp_sen[sen_dic[trigram]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[trigram]] = 1
+                else:
+                    temp_sen[sen_dic[trigram]] = 1
                 # senti_int.append(getSingle(words[i]))
                 # senti_int.append(getSingle(words[i + 1]))
-                senti_int.append(temp_sen)
-                senti_int.append(temp_sen)
+                senti_int.append(middle)
+                senti_int.append(middle)
                 senti_int.append(temp_sen)
                 i += 3
                 yes_num += 3
                 three_count += 1
                 continue
             elif bigram in sen_dic:
-                temp_sen[sen_dic[bigram]] = 1
+                if i >= 2:
+                    if words[i - 2] == "not" or words[i - 2] == "no" or words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[bigram] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + bigram)
+                        elif sen_dic[bigram] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + bigram)
+                        else:
+                            temp_sen[sen_dic[bigram]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[bigram]] = 1
+                elif i == 1:
+                    if words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[bigram] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 1] + " " + bigram)
+                        elif sen_dic[bigram] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 1] + " " + bigram)
+                        else:
+                            temp_sen[sen_dic[bigram]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[bigram]] = 1
+                else:
+                    temp_sen[sen_dic[bigram]] = 1
                 # senti_int.append(getSingle(words[i]))
-                senti_int.append(temp_sen)
+                senti_int.append(middle)
                 senti_int.append(temp_sen)
                 i += 2
                 yes_num += 2
                 two_count += 1
                 continue
             elif words[i] in sen_dic:
-                temp_sen[sen_dic[words[i]]] = 1
+                if i >= 2:
+                    if words[i - 2] == "not" or words[i - 2] == "no" or words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[words[i]] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + words[i])
+                        elif sen_dic[words[i]] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 2] + " " + words[i - 1] + " " + words[i])
+                        else:
+                            temp_sen[sen_dic[words[i]]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[words[i]]] = 1
+                elif i == 1:
+                    if words[i - 1] == "not" or words[i - 1] == "no":
+                        if sen_dic[words[i]] == 0:
+                            temp_sen[2] = 1
+                            print(words[i - 1] + " " + words[i])
+                        elif sen_dic[words[i]] == 2:
+                            temp_sen[0] = 1
+                            print(words[i - 1] + " " + words[i])
+                        else:
+                            temp_sen[sen_dic[words[i]]] = 1
+                        rev_num += 1
+                    else:
+                        temp_sen[sen_dic[words[i]]] = 1
+                else:
+                    temp_sen[sen_dic[words[i]]] = 1
                 senti_int.append(temp_sen)
                 i += 1
                 yes_num += 1
@@ -104,13 +186,14 @@ def read_data(file_path):
                 senti_int.append(temp_sen)
                 i += 1
                 continue
+        middle = [0, 1, 0]
         if len(senti_int) == len(words) - 2:
             bigram = words[len(words) - 2] + ' ' + words[len(words) - 1]
             temp_sen = [0, 0, 0]
             if bigram in sen_dic:
                 temp_sen[sen_dic[bigram]] = 1
                 # senti_int.append(getSingle(words[len(words) - 2]))
-                senti_int.append(temp_sen)
+                senti_int.append(middle)
                 senti_int.append(temp_sen)
                 yes_num += 2
                 two_count += 1
@@ -194,7 +277,7 @@ def read_data(file_path):
                 score_int.append(0.5)
         score_data.append(score_int)
 
-        print(words, ' | ', score_int)
+        # print(words, ' | ', score_int)
     f.close()
 
     assert len(data) == len(sen_data) == len(score_data)
@@ -246,7 +329,41 @@ print("tri == ", tri)
 
 train_fir = open(all_path + "train.pkl", "wb")
 test_fir = open(all_path + "test.pkl", "wb")
+print("len(y) == ", len(test_y))
+y_res = np.asarray([0, 0, 0, 0, 0])
+for y in train_y:
+    # y_index = 0
+    # for l in range(len(y)):
 
+    y_res += np.asarray(y)
+print(y_res)
+
+f1 = 0
+f2 = 0
+f3 = 0
+f4 = 0
+f5 = 0
+for f in test_f:
+    for s_f in f:
+        if s_f < 0.37:
+            f1 += 1
+        elif s_f < 0.5:
+            f1 += 1
+        elif s_f == 0.5:
+            f3 += 1
+        elif s_f < 0.585:
+            f5 += 1
+        else:
+            f5 += 1
+print(f1)
+print(f2)
+print(f3)
+print(f4)
+print(f5)
+
+
+# for i in range(len(train_y)):
+#     print(train_f[i], " | ", train_y[i])
 pickle.dump(train_x, train_fir)
 pickle.dump(train_y, train_fir)
 pickle.dump(train_s, train_fir)
@@ -259,3 +376,5 @@ pickle.dump(test_f, test_fir)
 
 train_fir.close()
 test_fir.close()
+
+print("rev_num == ", rev_num)

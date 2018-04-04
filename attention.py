@@ -39,5 +39,4 @@ def attention(inputs, attention_size, time_major=False):
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
 
-    return output, W_a, b_omega, u_omega
-
+    return output
