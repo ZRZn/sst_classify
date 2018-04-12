@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 import tensorflow as tf
 import pickle
 import os
@@ -16,7 +17,6 @@ from attentionMulti import attentionMulti
 from attention import attention
 from attentionOri import attentionOri
 from attentionCopy import attentionCopy
-from attentionGoogle import attentionGoogle
 # from sortData import sortData
 # from getInput import read_data, read_y
 import math
@@ -24,7 +24,7 @@ import math
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 4
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -33,6 +33,8 @@ KEEP_PROB = 0.8
 DELTA = 0.5
 Y_Class = 5
 SEN_CLASS = 3
+FILTER_START = 3
+FILTER_END = 5
 
 
 
@@ -65,21 +67,6 @@ def length(sequences):
     seq_len = tf.reduce_sum(used, reduction_indices=1)
     return tf.cast(seq_len, tf.int32)
 
-def AttentionLayer(inputs, name):
-    # inputs是GRU的输出，size是[batch_size, max_time, encoder_size(hidden_size * 2)]
-    with tf.variable_scope(name):
-        # u_context是上下文的重要性向量，用于区分不同单词/句子对于句子/文档的重要程度,
-        # 因为使用双向GRU，所以其长度为2×hidden_szie
-        u_context = tf.Variable(tf.truncated_normal([ATTENTION_SIZE]), name='u_context')
-        # 使用一个全连接层编码GRU的输出的到期隐层表示,输出u的size是[batch_size, max_time, hidden_size * 2]
-        h = layers.fully_connected(inputs, ATTENTION_SIZE, activation_fn=tf.nn.tanh)
-        # shape为[batch_size, max_time, 1]
-        alpha = tf.nn.softmax(tf.reduce_sum(tf.multiply(h, u_context), axis=2, keep_dims=True), dim=1)
-        # reduce_sum之前shape为[batch_szie, max_time, hidden_szie*2]，之后shape为[batch_size, hidden_size*2]
-        atten_output = tf.reduce_sum(tf.multiply(inputs, alpha), axis=1)
-        return atten_output
-
-
 
 #placeholders
 
@@ -98,31 +85,28 @@ emd_file.close()
 embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
-# #normal bi_GRU
-(f_out, b_out), _ = bi_rnn(GRUCell(HIDDEN_SIZE), GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
-gru_out = tf.concat((f_out, b_out), axis=2)
+input_emd = tf.expand_dims(input_emd, -1)
 
-#RNN
-# gru_out, final_out = dynamic_rnn(GRUCell(HIDDEN_SIZE), input_emd, sequence_length=length(input_emd), dtype=tf.float32)
+def cond1(t, cnn_out):
+    return t < FILTER_END
+def body1(t, cnn_out):
 
-# attention_output = final_out
-#Attention Layer
-# attention_output, alphas = attentionMulti(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
+    return t+1, cnn_out
 
+t = tf.constant(FILTER_START, tf.int32)
+_, cnn_out = tf.while_loop(cond1, body1, [t,])
+tf.nn.max_pool()
 
-# attention_output, w_a, b_omega, u_omega = attention(gru_out, ATTENTION_SIZE)
-# attention_output, b_pos, b_o, b_neg = attentionOri(gru_out, ATTENTION_SIZE, input_s, BATCH_SIZE, sen_len_ph)
-# attention_output, b1, b2, b3, b4, b5 = attentionCopy(gru_out, ATTENTION_SIZE, input_f, BATCH_SIZE, sen_len_ph)
-attention_output = attentionGoogle(gru_out, gru_out.shape[2].value)
 # #Dropout
-drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
+# drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
+#
+# #FullConnect Layer
+# w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
+#
+# b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
+# full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
-#FullConnect Layer
-w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
-
-b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
-full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
-
+full_out = attention_output
 #Loss
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
