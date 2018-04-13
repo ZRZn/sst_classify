@@ -24,17 +24,21 @@ import math
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
 
-NUM_EPOCHS = 4
+
+NUM_EPOCHS = 12
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
 ATTENTION_SIZE = 200
-KEEP_PROB = 0.8
+KEEP_PROB = 0.5
 DELTA = 0.5
 Y_Class = 5
 SEN_CLASS = 3
 FILTER_START = 3
 FILTER_END = 5
+FILTER_NUM = 100
+FULL_SIZE = (FILTER_END - FILTER_START + 1) * FILTER_NUM
+L2_LAMBDA = 3.0
 
 
 
@@ -85,30 +89,40 @@ emd_file.close()
 embeddings = tf.Variable(emb_array, trainable=True)
 input_emd = tf.nn.embedding_lookup(embeddings, input_x)     #shape= (B, None, E)
 
-input_emd = tf.expand_dims(input_emd, -1)
+input_cnn = tf.expand_dims(input_emd, -1)
 
-def cond1(t, cnn_out):
-    return t < FILTER_END
-def body1(t, cnn_out):
+cnn_out = []
 
-    return t+1, cnn_out
+for t in range(FILTER_START, FILTER_END + 1):
+    with tf.name_scope("conv-maxpool-" + str(t)):
+        filter_shape = [t, EMBEDDING_SIZE, 1, FILTER_NUM]
+        W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
+        b = tf.Variable(tf.constant(0.1, shape=[FILTER_NUM]), name="b")
+        conv = tf.nn.conv2d(input_cnn, W, [1, 1, 1, 1], 'VALID', name='conv')
+        h = tf.nn.relu(tf.nn.bias_add(conv, b), name='relu')     #shape=[B, sen_len-filter_size+1, 1, FILTER_NUMS]
+        h = tf.reshape(h, [BATCH_SIZE, -1, FILTER_NUM])
+        # pooled = attention(h, ATTENTION_SIZE)
+        pooled = tf.reduce_max(h, axis=1, name='pooled')   #shape=[B,FILTER_NUMS]
+        cnn_out.append(pooled)
 
-t = tf.constant(FILTER_START, tf.int32)
-_, cnn_out = tf.while_loop(cond1, body1, [t,])
-tf.nn.max_pool()
+cnn_out = tf.concat(cnn_out, axis=1)
+# cnn_out = tf.reshape(cnn_out, [-1, FULL_SIZE])
 
-# #Dropout
-# drop_out = tf.nn.dropout(attention_output, keep_prob_ph)
-#
-# #FullConnect Layer
-# w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFan(gru_out.shape[2].value, Y_Class), calFan(gru_out.shape[2].value, Y_Class)))
-#
-# b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
-# full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
-full_out = attention_output
+#Dropout
+drop_out = tf.nn.dropout(cnn_out, keep_prob_ph)
+
+l2_loss = tf.constant(0.0)
+#FullConnect Layer
+w_full = tf.Variable(tf.random_uniform([FULL_SIZE, Y_Class], -calFan(FULL_SIZE, Y_Class), calFan(FULL_SIZE, Y_Class)))
+
+b_full = tf.Variable(tf.constant(0.1, shape=[Y_Class]))
+full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
+
+l2_loss += tf.nn.l2_loss(w_full)
+l2_loss += tf.nn.l2_loss(b_full)
 #Loss
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out)) + L2_LAMBDA * l2_loss
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
 
 # Accuracy metric
@@ -117,7 +131,7 @@ label = tf.argmax(input_y, axis=1, name='label')
 equal = tf.equal(predict, label)
 accuracy = tf.reduce_mean(tf.cast(equal, tf.float32))
 
-def start_train():
+def start_cnn():
     with tf.Session() as sess:
         # w_max = None
         # bp_max = None
@@ -163,13 +177,12 @@ def start_train():
                                                       keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-                if epoch > 0:
+                if epoch >= 7:
                     # print("accuracy_train" == accuracy_train / (b + 1))
                     # Testin
                     accuracy_test = 0
                     # print("origin_test == ", accuracy_test)
                     test_batches = len(test_X) // BATCH_SIZE
-                    result_tag = []
                     for z in range(test_batches):
                         x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
@@ -185,7 +198,6 @@ def start_train():
                                                                         keep_prob_ph: 1.0})
                         accuracy_test += test_acc
                         loss_test += loss_test_batch
-
                         add_value = []
                         # assert len(test_predict) == len(test_label) == len(test_equal)
                         # for i in range(len(test_equal)):
@@ -207,25 +219,14 @@ def start_train():
                     loss_test /= test_batches
                     if accuracy_test > max_acc:
                         max_acc = accuracy_test
-                        res_max = result_tag
                         # print(res_max)
                         # w_max = W.eval()
-                        # bp_max = b_pos.eval()
-                        # bm_max = b_med.eval()
-                        # bn_max = b_neg.eval()
-                        # up_max = u_pos.eval()
-                        # um_max = u_med.eval()
-                        # un_max = u_neg.eval()
-                        # print("b1: ", b1.eval())
-                        # print("b2: ", b2.eval())
-                        # print("b3: ", b3.eval())
-                        # print("b4: ", b4.eval())
-                        # print("b5: ", b5.eval())
                     print("accuracy_test == ", accuracy_test)
                     print("epoch = ", epoch, "max == ", max_acc)
 
 
         print("max_accuracy == ", max_acc)
-        return max_acc, res_max
+        return max_acc
 
-max_acc = start_train()
+
+max_acc = start_cnn()

@@ -78,9 +78,9 @@ def attentionCopy(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fal
                     v = tf.tensordot(inputs[t, i, :], wf1, axes=1) + b5
                 return v
 
-            vu = tf.cond(tf.less(s[t, i], 0.2), lambda: getAttention(0), lambda: tf.cond(tf.less(s[t, i], 0.4), lambda: getAttention(1),
-                                                lambda: tf.cond(tf.less_equal(s[t, i], 0.6), lambda: getAttention(2),
-                                                lambda:  tf.cond(tf.less_equal(s[t, i], 0.8), lambda: getAttention(3),
+            vu = tf.cond(tf.less(s[t, i], 0.37), lambda: getAttention(0), lambda: tf.cond(tf.less(s[t, i], 0.5), lambda: getAttention(1),
+                                                lambda: tf.cond(tf.equal(0.5, s[t, i]), lambda: getAttention(2),
+                                                lambda:  tf.cond(tf.less_equal(s[t, i], 0.585), lambda: getAttention(3),
                                                                  lambda: getAttention(4)))))
             vus = tf.concat((vus, [vu]), axis=0)
             i += 1

@@ -17,6 +17,7 @@ from attention import attention
 from attentionOri import attentionOri
 from attentionCopy import attentionCopy
 from attentionGoogle import attentionGoogle
+from attentionMulti2 import attentionMulti2
 # from sortData import sortData
 # from getInput import read_data, read_y
 import math
@@ -24,7 +25,7 @@ import math
 def calFan(fan_in, fan_out):
     return math.sqrt(6 / (fan_in + fan_out))
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 4
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -123,6 +124,7 @@ w_full = tf.Variable(tf.random_uniform([gru_out.shape[2].value, Y_Class], -calFa
 b_full = tf.Variable(tf.zeros(shape=[Y_Class]))
 full_out = tf.nn.xw_plus_b(drop_out, w_full, b_full)
 
+# full_out = attention_output
 #Loss
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=full_out))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(loss=loss)
@@ -186,6 +188,7 @@ def start_train():
                     # print("origin_test == ", accuracy_test)
                     test_batches = len(test_X) // BATCH_SIZE
                     result_tag = []
+                    alphas_res = []
                     for z in range(test_batches):
                         x_test = test_X[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
                         y_test = test_Y[z * BATCH_SIZE: (z + 1) * BATCH_SIZE]
@@ -201,7 +204,6 @@ def start_train():
                                                                         keep_prob_ph: 1.0})
                         accuracy_test += test_acc
                         loss_test += loss_test_batch
-
                         add_value = []
                         # assert len(test_predict) == len(test_label) == len(test_equal)
                         # for i in range(len(test_equal)):
@@ -232,6 +234,9 @@ def start_train():
                         # up_max = u_pos.eval()
                         # um_max = u_med.eval()
                         # un_max = u_neg.eval()
+                        # print("b_pos: ", b_pos.eval())
+                        # print("b_o: ", b_o.eval())
+                        # print("b_neg: ", b_neg.eval())
                         # print("b1: ", b1.eval())
                         # print("b2: ", b2.eval())
                         # print("b3: ", b3.eval())

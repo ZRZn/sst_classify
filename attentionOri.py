@@ -42,12 +42,13 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
     b = tf.Variable(tf.zeros([Y_CLASS]))
     b_pos = tf.Variable(tf.zeros([Y_CLASS]))
     b_neg = tf.Variable(tf.zeros([Y_CLASS]))
+    b_zero = tf.Variable(tf.zeros([Y_CLASS]), trainable=False)
     wf = tf.Variable(tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
     wf_pos = tf.Variable(
         tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
     wf_neg = tf.Variable(
         tf.random_uniform([hidden_size, Y_CLASS], -calFan(hidden_size, Y_CLASS), calFan(hidden_size, Y_CLASS)))
-
+    wf_zero = tf.Variable(tf.zeros([hidden_size, Y_CLASS]), trainable=False)
     t = tf.constant(0)
     s = tf.cast(s, tf.bool)
     def cond_out(t, vu_final):
@@ -65,7 +66,7 @@ def attentionOri(inputs, attention_size, s, BATCH_SIZE, sen_len, time_major=Fals
                     v = tf.tensordot(inputs[t, i, :], wf_neg, axes=1) + b_neg
                 elif flag == 1:
                     v = tf.tensordot(inputs[t, i, :], wf, axes=1) + b
-                else:
+                elif flag == 2:
                     v = tf.tensordot(inputs[t, i, :], wf_pos, axes=1) + b_pos
                 return v
 

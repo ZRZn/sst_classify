@@ -10,7 +10,7 @@ import numpy as np
 LAYERS_NUM = 3
 HEAD_NUM = 4
 EACH_HEAD_SIZE = 50
-NUM_EPOCHS = 100
+NUM_EPOCHS = 200
 BATCH_SIZE = 32
 HIDDEN_SIZE = 100
 EMBEDDING_SIZE = 200
@@ -170,7 +170,7 @@ def start_train():
                                                       keep_prob_ph: KEEP_PROB})
                 accuracy_train += acc
                 loss_train = loss_tr * DELTA + loss_train * (1 - DELTA)
-                if epoch > 4 and b % 10 == 0:
+                if epoch > 12 and b % 10 == 0:
                     # print("accuracy_train" == accuracy_train / (b + 1))
                     # Testin
                     accuracy_test = 0
