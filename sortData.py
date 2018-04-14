@@ -50,8 +50,8 @@ def sortData(x, y, s, f, BATCH_SIZE=32):
     num = len(x) // BATCH_SIZE
     for i in range(num):
         max = len(x[(i + 1) * BATCH_SIZE - 1])
-        if max < 5:
-            max = 5
+        if max < 3:
+            max = 3
         for j in range(i * BATCH_SIZE, (i + 1) * BATCH_SIZE):
             if max == len(x[j]):
                 continue
